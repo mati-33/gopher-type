@@ -47,12 +47,14 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "q", "ctrl+c":
-			return s, tea.Quit
+		case "esc":
+			return s, func() tea.Msg { return PopScreen{} }
+
 		case "enter":
 			s.cursor = 0
 			s.errors = []int{}
 			s.finished = false
+
 		default:
 			current := string(s.text[s.cursor])
 			if msg.String() != current {
