@@ -87,7 +87,11 @@ func (s typingScreen) View() string {
 
 		for idx, ch := range s.text[:s.cursor] {
 			if slices.Contains(s.errors, idx) {
-				b.WriteString(errorStyle.Render(string(ch)))
+				if string(ch) == " " {
+					b.WriteString(errorStyle.Render(""))
+				} else {
+					b.WriteString(errorStyle.Render(string(ch)))
+				}
 			} else {
 				b.WriteString(afterStyle.Render(string(ch)))
 			}
