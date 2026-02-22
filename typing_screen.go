@@ -17,6 +17,7 @@ var (
 	beforeStyle = lipgloss.NewStyle().Foreground(grey)
 	afterStyle  = lipgloss.NewStyle().Foreground(white)
 	errorStyle  = lipgloss.NewStyle().Foreground(red)
+	textStyle   = lipgloss.NewStyle()
 )
 
 type typingScreen struct {
@@ -40,11 +41,16 @@ func newTypingScreen(text []rune, width, height int) typingScreen {
 }
 
 func (s typingScreen) Init() tea.Cmd {
-	return nil
+	return tea.ClearScreen
 }
 
 func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
+	case tea.WindowSizeMsg:
+		s.width = msg.Width
+		s.height = msg.Height
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
@@ -91,7 +97,18 @@ func (s typingScreen) View() string {
 		b.WriteString(beforeStyle.Render(string(s.text[s.cursor+1:])))
 
 		view = b.String()
-
 	}
-	return lipgloss.Place(s.width, s.height, lipgloss.Center, lipgloss.Center, view)
+
+	textWidth := int(float32(s.width) * 0.6)
+	textView := textStyle.
+		Width(textWidth).
+		Height(3).
+		Align(lipgloss.Center, lipgloss.Center).
+		Render(view)
+
+	return lipgloss.Place(
+		s.width, s.height,
+		lipgloss.Center, lipgloss.Center,
+		textView,
+	)
 }

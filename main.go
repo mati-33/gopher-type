@@ -5,10 +5,16 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 func main() {
+	f, err := tea.LogToFile("debug.log", "")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to setup debug logging: %v", err)
+		os.Exit(1)
+	}
+	defer f.Close()
+
 	m := newModel()
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
@@ -17,21 +23,14 @@ func main() {
 	}
 }
 
-const header = `
-▄▀▀ █▀▄ █▀▄ █▄█ █▀▀ █▀▄   ▀█▀ ▀▄▀ █▀▄ █▀▀
-█▄█ █▄█ █▀▀ █ █ ██▄ █▀▄    █   █  █▀▀ ██▄
-	`
-
 type model struct {
-	text        []rune
+	screenStack []tea.Model
 	width       int
 	height      int
-	screenStack []tea.Model
 }
 
 func newModel() model {
 	return model{
-		text:        []rune("in this world is the destiny of mankind controlled by some transcendental entity or law"),
 		screenStack: []tea.Model{},
 	}
 }
@@ -42,19 +41,23 @@ func (m model) Init() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		return m, nil
+
+		if len(m.screenStack) == 0 {
+			return m, func() tea.Msg {
+				return PushScreen{
+					newWelcomeScreen(m.width, m.height),
+				}
+			}
+		}
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "q", "ctrl+c":
+		case "ctrl+c":
 			return m, tea.Quit
-		case "enter":
-			return m, func() tea.Msg {
-				return PushScreen{newTypingScreen(m.text, m.width, m.height)}
-			}
 		}
 
 	case PushScreen:
@@ -63,7 +66,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case PopScreen:
 		m.screenStack = m.screenStack[:len(m.screenStack)-1]
-		return m, nil
+		return m, tea.ClearScreen
 	}
 
 	if len(m.screenStack) == 0 {
@@ -79,16 +82,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	if len(m.screenStack) > 0 {
-		currentScreen := m.screenStack[len(m.screenStack)-1]
-		return currentScreen.View()
+		return m.screenStack[len(m.screenStack)-1].View()
 	}
 
-	h := lipgloss.Place(m.width, 6, lipgloss.Center, lipgloss.Center, header)
-	return lipgloss.JoinVertical(
-		lipgloss.Center,
-		h,
-		"Press enter to start",
-	)
+	return ""
 }
 
 type PushScreen struct {
