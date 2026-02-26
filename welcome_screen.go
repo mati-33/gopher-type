@@ -6,6 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	textproviders "github.com/mati-33/gopher-type/text_providers"
 )
 
 type choice int
@@ -77,9 +78,10 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch s.cursor {
 			case int(practise):
 				return s, func() tea.Msg {
+					p := textproviders.NewWordArrayProviderFromTxtFile(textproviders.EngTop100_4LetterWords)
 					return PushScreen{
 						screen: newTypingScreen(
-							[]rune("in this world is the destiny of mankind controlled by some transcendental entity or law"),
+							p,
 							s.width,
 							s.height,
 						),

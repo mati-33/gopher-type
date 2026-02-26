@@ -37,24 +37,30 @@ func (r result) View() string {
 	return fmt.Sprintf("wpm: %d  accuracy: %.2f%% wpmc: %d", r.wpm, 100.0*r.accuracy, r.wpmc)
 }
 
-type typingScreen struct {
-	text       []rune
-	errors     []int
-	cursor     int
-	width      int
-	height     int
-	lastResult result
-	stopwatch  stopwatch.Model
+type TextProvider interface {
+	Provide(maxLen int) []rune
 }
 
-func newTypingScreen(text []rune, width, height int) typingScreen {
+type typingScreen struct {
+	text         []rune
+	textProvider TextProvider
+	errors       []int
+	cursor       int
+	width        int
+	height       int
+	lastResult   result
+	stopwatch    stopwatch.Model
+}
+
+func newTypingScreen(textProvider TextProvider, width, height int) typingScreen {
 	return typingScreen{
-		text:      text,
-		errors:    []int{},
-		cursor:    0,
-		width:     width,
-		height:    height,
-		stopwatch: stopwatch.NewWithInterval(time.Millisecond),
+		text:         textProvider.Provide(100),
+		textProvider: textProvider,
+		errors:       []int{},
+		cursor:       0,
+		width:        width,
+		height:       height,
+		stopwatch:    stopwatch.NewWithInterval(time.Millisecond),
 	}
 }
 
@@ -78,6 +84,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				s.cursor = 0
 				s.errors = []int{}
+				s.text = s.textProvider.Provide(100)
 				cmds = append(cmds, s.stopwatch.Stop(), s.stopwatch.Reset())
 			}
 
@@ -86,8 +93,9 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, s.stopwatch.Start())
 			}
 
-			current := string(s.text[s.cursor])
-			if msg.String() != current {
+			expected := string(s.text[s.cursor])
+
+			if msg.String() != expected {
 				s.errors = append(s.errors, s.cursor)
 			}
 
@@ -97,6 +105,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.lastResult = calculateResult(len(s.text), len(s.errors), s.stopwatch.Elapsed())
 				s.cursor = 0
 				s.errors = []int{}
+				s.text = s.textProvider.Provide(100)
 				cmds = append(cmds, s.stopwatch.Stop(), s.stopwatch.Reset())
 			}
 		}
@@ -115,11 +124,11 @@ func (s typingScreen) View() string {
 
 	for idx, ch := range s.text[:s.cursor] {
 		if slices.Contains(s.errors, idx) {
-			if string(ch) == " " {
-				b.WriteString(errorStyle.Render(""))
-			} else {
-				b.WriteString(errorStyle.Render(string(ch)))
+			wrongChar := string(ch)
+			if wrongChar == " " {
+				wrongChar = ""
 			}
+			b.WriteString(errorStyle.Render(wrongChar))
 		} else {
 			b.WriteString(afterStyle.Render(string(ch)))
 		}
@@ -135,11 +144,12 @@ func (s typingScreen) View() string {
 		Width(textWidth).
 		Height(1).
 		Align(lipgloss.Left).
+		MarginBottom(1).
 		Render(s.lastResult.View())
 	textView := textStyle.
 		Width(textWidth).
 		Height(3).
-		Align(lipgloss.Center, lipgloss.Center).
+		Align(lipgloss.Left, lipgloss.Center).
 		Render(view)
 	stopwatchView := fmt.Sprintf("elapsed: %s", s.stopwatch.View())
 
