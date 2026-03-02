@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	textproviders "github.com/mati-33/gopher-type/text_providers"
 )
 
@@ -98,7 +98,7 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, nil
 }
 
-func (s welcomeScreen) View() string {
+func (s welcomeScreen) View() tea.View {
 	choicesWidth := lipgloss.Width(header)
 	b := strings.Builder{}
 
@@ -120,5 +120,5 @@ func (s welcomeScreen) View() string {
 		b.String(),
 	)
 
-	return lipgloss.JoinVertical(lipgloss.Center, headerView, choicesView)
+	return tea.NewView(lipgloss.JoinVertical(lipgloss.Center, headerView, choicesView))
 }

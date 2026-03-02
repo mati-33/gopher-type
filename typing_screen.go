@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/stopwatch"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/stopwatch"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 var (
@@ -61,7 +61,7 @@ func newTypingScreen(textProvider TextProvider, textLen, width, height int) typi
 		cursor:       0,
 		width:        width,
 		height:       height,
-		stopwatch:    stopwatch.NewWithInterval(time.Millisecond),
+		stopwatch:    stopwatch.New(stopwatch.WithInterval(time.Millisecond)),
 		textLen:      textLen,
 	}
 }
@@ -96,8 +96,13 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			expected := string(s.text[s.cursor])
+			got := msg.String()
 
-			if msg.String() != expected {
+			if got == "space" {
+				got = " "
+			}
+
+			if got != expected {
 				s.errors = append(s.errors, s.cursor)
 			}
 
@@ -119,7 +124,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return s, tea.Batch(cmds...)
 }
 
-func (s typingScreen) View() string {
+func (s typingScreen) View() tea.View {
 	var view string
 
 	b := strings.Builder{}
@@ -155,11 +160,11 @@ func (s typingScreen) View() string {
 		Render(view)
 	stopwatchView := fmt.Sprintf("elapsed: %s", s.stopwatch.View())
 
-	return lipgloss.Place(
+	return tea.NewView(lipgloss.Place(
 		s.width, s.height,
 		lipgloss.Center, lipgloss.Center,
 		lipgloss.JoinVertical(lipgloss.Left, resultView, textView, stopwatchView),
-	)
+	))
 }
 
 func calculateResult(runesNo, errorsNo int, elapsed time.Duration) result {

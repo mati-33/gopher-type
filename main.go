@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 	defer f.Close()
 
 	m := newModel()
-	p := tea.NewProgram(m, tea.WithAltScreen())
+	p := tea.NewProgram(m)
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to start the program: %v", err)
 		os.Exit(1)
@@ -80,12 +80,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
+func (m model) View() tea.View {
 	if len(m.screenStack) > 0 {
-		return m.screenStack[len(m.screenStack)-1].View()
+		view := m.screenStack[len(m.screenStack)-1].View()
+		view.AltScreen = true
+		return view
 	}
 
-	return ""
+	return tea.NewView("")
 }
 
 type PushScreen struct {
