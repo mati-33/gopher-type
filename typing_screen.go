@@ -50,17 +50,19 @@ type typingScreen struct {
 	height       int
 	lastResult   result
 	stopwatch    stopwatch.Model
+	textLen      int
 }
 
-func newTypingScreen(textProvider TextProvider, width, height int) typingScreen {
+func newTypingScreen(textProvider TextProvider, textLen, width, height int) typingScreen {
 	return typingScreen{
-		text:         textProvider.Provide(100),
+		text:         textProvider.Provide(textLen),
 		textProvider: textProvider,
 		errors:       []int{},
 		cursor:       0,
 		width:        width,
 		height:       height,
 		stopwatch:    stopwatch.NewWithInterval(time.Millisecond),
+		textLen:      textLen,
 	}
 }
 
@@ -84,7 +86,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				s.cursor = 0
 				s.errors = []int{}
-				s.text = s.textProvider.Provide(100)
+				s.text = s.textProvider.Provide(s.textLen)
 				cmds = append(cmds, s.stopwatch.Stop(), s.stopwatch.Reset())
 			}
 
@@ -105,7 +107,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.lastResult = calculateResult(len(s.text), len(s.errors), s.stopwatch.Elapsed())
 				s.cursor = 0
 				s.errors = []int{}
-				s.text = s.textProvider.Provide(100)
+				s.text = s.textProvider.Provide(s.textLen)
 				cmds = append(cmds, s.stopwatch.Stop(), s.stopwatch.Reset())
 			}
 		}

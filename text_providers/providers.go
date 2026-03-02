@@ -7,8 +7,8 @@ import (
 	"unicode/utf8"
 )
 
-//go:embed eng_top_100_4_letter_words.txt
-var EngTop100_4LetterWords string
+//go:embed eng_1k.txt
+var Eng1k string
 
 type WordArrayProvider struct {
 	words []string

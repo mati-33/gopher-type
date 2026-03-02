@@ -78,10 +78,11 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch s.cursor {
 			case int(practise):
 				return s, func() tea.Msg {
-					p := textproviders.NewWordArrayProviderFromTxtFile(textproviders.EngTop100_4LetterWords)
+					p := textproviders.NewWordArrayProviderFromTxtFile(textproviders.Eng1k)
 					return PushScreen{
 						screen: newTypingScreen(
 							p,
+							150,
 							s.width,
 							s.height,
 						),
