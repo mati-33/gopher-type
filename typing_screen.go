@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"slices"
 	"strings"
@@ -125,39 +126,49 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s typingScreen) View() tea.View {
-	var view string
+	textWidth := int(float32(s.width) * 0.6)
+	log.Printf("width is %d", textWidth)
 
-	b := strings.Builder{}
+	linesStr := []string{}
+	lines := splitText(s.text, textWidth)
+	i := 0
 
-	for idx, ch := range s.text[:s.cursor] {
-		if slices.Contains(s.errors, idx) {
-			wrongChar := string(ch)
-			if wrongChar == " " {
-				wrongChar = ""
+	for _, line := range lines {
+		b := strings.Builder{}
+		for _, rune := range line {
+			char := string(rune)
+			var style lipgloss.Style
+
+			switch {
+			case i < s.cursor && slices.Contains(s.errors, i):
+				if char == " " {
+					char = "."
+				}
+				style = errorStyle
+			case i < s.cursor:
+				style = afterStyle
+			case i == s.cursor:
+				style = cursorStyle
+			default:
+				style = beforeStyle
 			}
-			b.WriteString(errorStyle.Render(wrongChar))
-		} else {
-			b.WriteString(afterStyle.Render(string(ch)))
+
+			b.WriteString(style.Render(char))
+			i++
 		}
+
+		linesStr = append(linesStr, b.String())
 	}
 
-	b.WriteString(cursorStyle.Render(string(s.text[s.cursor])))
-	b.WriteString(beforeStyle.Render(string(s.text[s.cursor+1:])))
-
-	view = b.String()
-
-	textWidth := int(float32(s.width) * 0.6)
 	resultView := textStyle.
 		Width(textWidth).
 		Height(1).
 		Align(lipgloss.Left).
 		MarginBottom(1).
 		Render(s.lastResult.View())
-	textView := textStyle.
-		Width(textWidth).
-		Height(3).
-		Align(lipgloss.Left, lipgloss.Center).
-		Render(view)
+
+	textView := lipgloss.JoinVertical(0, linesStr...)
+
 	stopwatchView := fmt.Sprintf("elapsed: %s", s.stopwatch.View())
 
 	return tea.NewView(lipgloss.Place(
@@ -165,6 +176,36 @@ func (s typingScreen) View() tea.View {
 		lipgloss.Center, lipgloss.Center,
 		lipgloss.JoinVertical(lipgloss.Left, resultView, textView, stopwatchView),
 	))
+}
+
+func splitText(text []rune, width int) [][]rune {
+	words := strings.Fields(string(text))
+
+	if len(words) == 0 {
+		return nil
+	}
+
+	var lines [][]rune
+
+	i := 0
+	for i < len(words) {
+		var line []rune
+
+		for i < len(words) {
+			word := []rune(words[i] + " ")
+
+			if len(line)+len(word) <= width || len(line) == 0 {
+				line = append(line, word...)
+				i++
+			} else {
+				break
+			}
+		}
+
+		lines = append(lines, line)
+	}
+
+	return lines
 }
 
 func calculateResult(runesNo, errorsNo int, elapsed time.Duration) result {

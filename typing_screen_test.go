@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"slices"
+	"strings"
 	"testing"
 	"time"
 )
@@ -93,4 +96,94 @@ func Test_calculateAccuracy(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_splitText(t *testing.T) {
+	tests := []struct {
+		name  string
+		text  []rune
+		width int
+		want  [][]rune
+	}{
+		{
+			name:  "case1",
+			text:  []rune("gave huge nature has trade as moment modern much did learn catch wonder office offer give anger lift atom cause control here fast sharp example"),
+			width: 57,
+			want: [][]rune{
+				[]rune("gave huge nature has trade as moment modern much did "),
+				[]rune("learn catch wonder office offer give anger lift atom "),
+				[]rune("cause control here fast sharp example "),
+			},
+		},
+		{
+			name:  "avoid infinite loop",
+			text:  []rune("foo bar baz"),
+			width: 0,
+			want: [][]rune{
+				[]rune("foo "),
+				[]rune("bar "),
+				[]rune("baz "),
+			},
+		},
+		{
+			name:  "big width",
+			text:  []rune("foo bar baz"),
+			width: 110,
+			want: [][]rune{
+				[]rune("foo bar baz "),
+			},
+		},
+		{
+			name:  "two lines",
+			text:  []rune("hello world foo bar golang gopher python snek"),
+			width: 28,
+			want: [][]rune{
+				[]rune("hello world foo bar golang "),
+				[]rune("gopher python snek "),
+			},
+		},
+		{
+			name:  "no text",
+			text:  []rune(""),
+			width: 10,
+			want:  nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := splitText(tt.text, tt.width)
+			if !runeSlicesEqual(got, tt.want) {
+				t.Errorf("splitText()\ncase: %s\ngot: %s\nwant: %s", tt.name, printSplittedText(got), printSplittedText(tt.want))
+			}
+		})
+	}
+}
+
+func printSplittedText(splitted [][]rune) string {
+	if len(splitted) == 0 {
+		return "[][]rune{}"
+	}
+
+	b := strings.Builder{}
+	b.WriteString("[][]rune{\n")
+
+	for _, line := range splitted {
+		fmt.Fprintf(&b, "  []rune(\"%s\"),\n", string(line))
+	}
+
+	b.WriteString("}\n")
+
+	return b.String()
+}
+
+func runeSlicesEqual(a, b [][]rune) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if !slices.Equal(a[i], b[i]) {
+			return false
+		}
+	}
+	return true
 }
