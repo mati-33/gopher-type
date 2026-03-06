@@ -1,9 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	textproviders "github.com/mati-33/gopher-type/text_providers"
@@ -24,26 +21,16 @@ const header = `
 	`
 
 var (
-	headerStyle        = lipgloss.NewStyle().Align(lipgloss.Center).MarginTop(1).MarginBottom(3)
-	choiceStyle        = lipgloss.NewStyle()
-	focusedChoiceStyle = lipgloss.NewStyle().Background(lipgloss.Color("#303234"))
+	headerStyle = lipgloss.NewStyle().Align(lipgloss.Center).MarginTop(1).MarginBottom(3)
 )
 
 type welcomeScreen struct {
-	choices []string
-	cursor  int
-	width   int
-	height  int
+	width  int
+	height int
 }
 
 func newWelcomeScreen(width, height int) welcomeScreen {
 	return welcomeScreen{
-		choices: []string{
-			"Practise",
-			"Settings",
-			"About",
-			"Exit",
-		},
 		width:  width,
 		height: height,
 	}
@@ -64,34 +51,17 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 
-		case "j":
-			if s.cursor < len(s.choices)-1 {
-				s.cursor++
-			}
-
-		case "k":
-			if s.cursor > 0 {
-				s.cursor--
-			}
-
 		case "enter":
-			switch s.cursor {
-			case int(practise):
-				return s, func() tea.Msg {
-					p := textproviders.NewWordArrayProviderFromTxtFile(textproviders.Eng1k)
-					return PushScreen{
-						screen: newTypingScreen(
-							p,
-							150,
-							s.width,
-							s.height,
-						),
-					}
+			return s, func() tea.Msg {
+				p := textproviders.NewWordArrayProviderFromTxtFile(textproviders.Eng1k)
+				return PushScreen{
+					screen: newTypingScreen(
+						p,
+						150,
+						s.width,
+						s.height,
+					),
 				}
-			case int(settings):
-			case int(about):
-			case int(exit):
-				return s, tea.Quit
 			}
 		}
 	}
@@ -99,26 +69,8 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s welcomeScreen) View() tea.View {
-	choicesWidth := lipgloss.Width(header)
-	b := strings.Builder{}
-
-	for idx, choice := range s.choices {
-		cursorChar := " "
-		style := choiceStyle
-		if idx == s.cursor {
-			style = focusedChoiceStyle
-			cursorChar = ">"
-		}
-		b.WriteString(style.Width(choicesWidth).Render(fmt.Sprintf("%s %s", cursorChar, choice)))
-		b.WriteString("\n\n")
-	}
-
 	headerView := headerStyle.Width(s.width).Render(header)
-	choicesView := lipgloss.Place(
-		s.width, s.height-lipgloss.Height(headerView),
-		lipgloss.Center, 0.8,
-		b.String(),
-	)
+	welcomeTextView := "Press ENTER to start"
 
-	return tea.NewView(lipgloss.JoinVertical(lipgloss.Center, headerView, choicesView))
+	return tea.NewView(lipgloss.JoinVertical(lipgloss.Center, headerView, welcomeTextView))
 }
