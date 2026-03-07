@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"slices"
 	"strings"
@@ -14,28 +13,46 @@ import (
 )
 
 var (
-	white = lipgloss.Color("#ffffff")
-	grey  = lipgloss.Color("#bbbbbb")
-	red   = lipgloss.Color("#ff005f")
+	white  = lipgloss.Color("#ffffff")
+	grey   = lipgloss.Color("#bbbbbb")
+	red    = lipgloss.Color("#ff005f")
+	blue   = lipgloss.Color("#65d0dc")
+	yellow = lipgloss.Color("#ffff30")
 
 	cursorStyle = lipgloss.NewStyle().Underline(true).Foreground(grey)
 	beforeStyle = lipgloss.NewStyle().Foreground(grey)
 	afterStyle  = lipgloss.NewStyle().Foreground(white)
 	errorStyle  = lipgloss.NewStyle().Foreground(red)
 	textStyle   = lipgloss.NewStyle()
+	lineStyle   = lipgloss.NewStyle().MarginTop(1)
+	iconStyle   = lipgloss.NewStyle()
 )
 
 type result struct {
 	wpm      int
 	accuracy float64
-	wpmc     int
 }
+
+// KONIECZNIE MUSI BYC TAK JAK NA KEYBR W NAWIASIE NA ZIELONO LUB CZERWONO ROZNICA PODLUG POPRZEDNIEGO
 
 func (r result) View() string {
 	if r.wpm == 0 {
-		return "wpm: -  accuracy: -  wpmc: -"
+		return fmt.Sprintf("%s %s  %s %s",
+			iconStyle.Foreground(yellow).Render("󱐋"),
+			beforeStyle.Render("wpm: -"),
+			iconStyle.Foreground(blue).Render("󰣉"),
+			beforeStyle.Render("accuracy: -"),
+		)
 	}
-	return fmt.Sprintf("wpm: %d  accuracy: %.2f%% wpmc: %d", r.wpm, 100.0*r.accuracy, r.wpmc)
+
+	return fmt.Sprintf("%s %s %d  %s %s %.2f%%",
+		iconStyle.Foreground(yellow).Render("󱐋"),
+		beforeStyle.Render("wpm:"),
+		r.wpm,
+		iconStyle.Foreground(blue).Render("󰣉"),
+		beforeStyle.Render("accuracy:"),
+		100.0*r.accuracy,
+	)
 }
 
 type TextProvider interface {
@@ -126,8 +143,11 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s typingScreen) View() tea.View {
-	textWidth := int(float32(s.width) * 0.6)
-	log.Printf("width is %d", textWidth)
+	textWidth := int(float32(s.width) * 0.7)
+	resultOffset := int(float32(s.height) * 0.25)
+	if s.height < 14 {
+		resultOffset = 0
+	}
 
 	linesStr := []string{}
 	lines := splitText(s.text, textWidth)
@@ -157,25 +177,25 @@ func (s typingScreen) View() tea.View {
 			i++
 		}
 
-		linesStr = append(linesStr, b.String())
+		linesStr = append(linesStr, lineStyle.Render(b.String()))
 	}
 
 	resultView := textStyle.
-		Width(textWidth).
-		Height(1).
-		Align(lipgloss.Left).
-		MarginBottom(1).
+		Width(s.width).
+		Align(lipgloss.Center).
 		Render(s.lastResult.View())
 
 	textView := lipgloss.JoinVertical(0, linesStr...)
-
-	stopwatchView := fmt.Sprintf("elapsed: %s", s.stopwatch.View())
-
-	return tea.NewView(lipgloss.Place(
+	textLayer := lipgloss.NewLayer(lipgloss.Place(
 		s.width, s.height,
 		lipgloss.Center, lipgloss.Center,
-		lipgloss.JoinVertical(lipgloss.Left, resultView, textView, stopwatchView),
-	))
+		textView,
+	),
+		lipgloss.NewLayer(resultView).Y(resultOffset),
+	)
+
+	c := lipgloss.NewCompositor(textLayer)
+	return tea.NewView(c.Render())
 }
 
 func splitText(text []rune, width int) [][]rune {
@@ -214,7 +234,6 @@ func calculateResult(runesNo, errorsNo int, elapsed time.Duration) result {
 	return result{
 		wpm:      wpm,
 		accuracy: acc,
-		wpmc:     int(float64(wpm) * acc),
 	}
 }
 
