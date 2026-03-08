@@ -5,6 +5,8 @@ import (
 	"os"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/mati-33/gopher-type/internal/screens"
+	"github.com/mati-33/gopher-type/internal/screens/welcome"
 )
 
 func main() {
@@ -48,8 +50,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if len(m.screenStack) == 0 {
 			return m, func() tea.Msg {
-				return PushScreen{
-					newWelcomeScreen(m.width, m.height),
+				return screens.PushScreen{
+					Screen: welcome.NewWelcomeScreen(m.width, m.height),
 				}
 			}
 		}
@@ -60,11 +62,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-	case PushScreen:
-		m.screenStack = append(m.screenStack, msg.screen)
-		return m, msg.screen.Init()
+	case screens.PushScreen:
+		m.screenStack = append(m.screenStack, msg.Screen)
+		return m, msg.Screen.Init()
 
-	case PopScreen:
+	case screens.PopScreen:
 		m.screenStack = m.screenStack[:len(m.screenStack)-1]
 		return m, tea.ClearScreen
 	}
@@ -89,9 +91,3 @@ func (m model) View() tea.View {
 
 	return tea.NewView("")
 }
-
-type PushScreen struct {
-	screen tea.Model
-}
-
-type PopScreen struct{}

@@ -1,9 +1,11 @@
-package main
+package welcome
 
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	textproviders "github.com/mati-33/gopher-type/text_providers"
+	"github.com/mati-33/gopher-type/internal/screens"
+	"github.com/mati-33/gopher-type/internal/screens/typing"
+	textproviders "github.com/mati-33/gopher-type/internal/text_providers"
 )
 
 type choice int
@@ -29,7 +31,7 @@ type welcomeScreen struct {
 	height int
 }
 
-func newWelcomeScreen(width, height int) welcomeScreen {
+func NewWelcomeScreen(width, height int) welcomeScreen {
 	return welcomeScreen{
 		width:  width,
 		height: height,
@@ -54,8 +56,8 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			return s, func() tea.Msg {
 				p := textproviders.NewWordArrayProviderFromTxtFile(textproviders.Eng1k)
-				return PushScreen{
-					screen: newTypingScreen(
+				return screens.PushScreen{
+					Screen: typing.NewTypingScreen(
 						p,
 						100,
 						s.width,

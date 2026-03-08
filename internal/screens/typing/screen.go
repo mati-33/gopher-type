@@ -1,4 +1,4 @@
-package main
+package typing
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ import (
 	"charm.land/bubbles/v2/stopwatch"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/screens"
 )
 
 var (
@@ -116,7 +117,7 @@ type typingScreen struct {
 	stats        StatsComponent
 }
 
-func newTypingScreen(textProvider TextProvider, textLen, width, height int) typingScreen {
+func NewTypingScreen(textProvider TextProvider, textLen, width, height int) typingScreen {
 	return typingScreen{
 		text:         textProvider.Provide(textLen),
 		textProvider: textProvider,
@@ -146,7 +147,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "esc":
 			if s.cursor == 0 {
-				return s, func() tea.Msg { return PopScreen{} }
+				return s, func() tea.Msg { return screens.PopScreen{} }
 			} else {
 				s.cursor = 0
 				s.errors = []int{}

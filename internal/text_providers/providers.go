@@ -7,7 +7,7 @@ import (
 	"unicode/utf8"
 )
 
-//go:embed eng_1k.txt
+//go:embed words/eng_1k.txt
 var Eng1k string
 
 type WordArrayProvider struct {
