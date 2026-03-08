@@ -1,12 +1,6 @@
 package typing
 
 import (
-	"math"
-	"slices"
-	"strings"
-	"time"
-
-	"charm.land/bubbles/v2/stopwatch"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/screens"
@@ -14,16 +8,7 @@ import (
 )
 
 var (
-	white = lipgloss.Color("#ffffff")
-	grey  = lipgloss.Color("#bbbbbb")
-	red   = lipgloss.Color("#ff005f")
-
-	cursorStyle = lipgloss.NewStyle().Underline(true).Foreground(grey)
-	beforeStyle = lipgloss.NewStyle().Foreground(grey)
-	afterStyle  = lipgloss.NewStyle().Foreground(white)
-	errorStyle  = lipgloss.NewStyle().Foreground(red)
-	textStyle   = lipgloss.NewStyle()
-	lineStyle   = lipgloss.NewStyle().MarginTop(1)
+	textStyle = lipgloss.NewStyle()
 )
 
 type TextProvider interface {
@@ -31,28 +16,22 @@ type TextProvider interface {
 }
 
 type typingScreen struct {
-	text         []rune
 	textProvider TextProvider
-	errors       []int
-	cursor       int
 	width        int
 	height       int
-	stopwatch    stopwatch.Model
 	textLen      int
 	stats        components.Stats
+	text         components.Text
 }
 
 func NewTypingScreen(textProvider TextProvider, textLen, width, height int) typingScreen {
 	return typingScreen{
-		text:         textProvider.Provide(textLen),
 		textProvider: textProvider,
-		errors:       []int{},
-		cursor:       0,
 		width:        width,
 		height:       height,
-		stopwatch:    stopwatch.New(stopwatch.WithInterval(time.Millisecond)),
 		textLen:      textLen,
 		stats:        components.NewStats(),
+		text:         components.NewText(textProvider.Provide(textLen), int(float32(width)*0.7), height),
 	}
 }
 
@@ -67,91 +46,36 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		s.width = msg.Width
 		s.height = msg.Height
+		s.text.Width = int(float32(s.width) * 0.7)
+
+	case components.TextResult:
+		s.stats.UpdateStats(&components.StatsValues{
+			Wpm: msg.Wpm, Accuracy: msg.Accuracy,
+		})
+		s.text.Text = s.textProvider.Provide(s.textLen)
 
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
-			if s.cursor == 0 {
+			if s.text.Started {
+				s.text.Text = s.textProvider.Provide(s.textLen)
+				return s, tea.Batch(s.text.Reset()...)
+			} else {
 				return s, func() tea.Msg { return screens.PopScreen{} }
-			} else {
-				s.cursor = 0
-				s.errors = []int{}
-				s.text = s.textProvider.Provide(s.textLen)
-				cmds = append(cmds, s.stopwatch.Stop(), s.stopwatch.Reset())
-			}
-
-		default:
-			if s.cursor == 0 {
-				cmds = append(cmds, s.stopwatch.Start())
-			}
-
-			expected := string(s.text[s.cursor])
-			got := msg.String()
-
-			if got == "space" {
-				got = " "
-			}
-
-			if got != expected {
-				s.errors = append(s.errors, s.cursor)
-			}
-
-			if s.cursor < len(s.text)-1 {
-				s.cursor++
-			} else {
-				wpm := calculateWpm(len(s.text), s.stopwatch.Elapsed())
-				acc := calculateAccuracy(len(s.text), len(s.errors))
-				s.stats.UpdateStats(&components.StatsValues{Wpm: wpm, Accuracy: acc})
-				s.cursor = 0
-				s.errors = []int{}
-				s.text = s.textProvider.Provide(s.textLen)
-				cmds = append(cmds, s.stopwatch.Stop(), s.stopwatch.Reset())
 			}
 		}
 	}
 
-	stopwatch, cmd := s.stopwatch.Update(msg)
-	s.stopwatch = stopwatch
+	cmd := s.text.Update(msg)
 	cmds = append(cmds, cmd)
 	return s, tea.Batch(cmds...)
 }
 
 func (s typingScreen) View() tea.View {
-	textWidth := int(float32(s.width) * 0.7)
 	resultOffset := int(float32(s.height) * 0.2)
+
 	if s.height < 14 {
 		resultOffset = 0
-	}
-
-	linesStr := []string{}
-	lines := splitText(s.text, textWidth)
-	i := 0
-
-	for _, line := range lines {
-		b := strings.Builder{}
-		for _, rune := range line {
-			char := string(rune)
-			var style lipgloss.Style
-
-			switch {
-			case i < s.cursor && slices.Contains(s.errors, i):
-				if char == " " {
-					char = "."
-				}
-				style = errorStyle
-			case i < s.cursor:
-				style = afterStyle
-			case i == s.cursor:
-				style = cursorStyle
-			default:
-				style = beforeStyle
-			}
-
-			b.WriteString(style.Render(char))
-			i++
-		}
-
-		linesStr = append(linesStr, lineStyle.Render(b.String()))
 	}
 
 	resultView := textStyle.
@@ -159,7 +83,7 @@ func (s typingScreen) View() tea.View {
 		Align(lipgloss.Center).
 		Render(s.stats.View())
 
-	textView := lipgloss.JoinVertical(0, linesStr...)
+	textView := s.text.View()
 	textLayer := lipgloss.NewLayer(lipgloss.Place(
 		s.width, s.height,
 		lipgloss.Center, lipgloss.Center,
@@ -170,42 +94,4 @@ func (s typingScreen) View() tea.View {
 
 	c := lipgloss.NewCompositor(textLayer)
 	return tea.NewView(c.Render())
-}
-
-func splitText(text []rune, width int) [][]rune {
-	words := strings.Fields(string(text))
-
-	if len(words) == 0 {
-		return nil
-	}
-
-	var lines [][]rune
-
-	i := 0
-	for i < len(words) {
-		var line []rune
-
-		for i < len(words) {
-			word := []rune(words[i] + " ")
-
-			if len(line)+len(word) <= width || len(line) == 0 {
-				line = append(line, word...)
-				i++
-			} else {
-				break
-			}
-		}
-
-		lines = append(lines, line)
-	}
-
-	return lines
-}
-
-func calculateWpm(runesNo int, elapsed time.Duration) int {
-	return int(math.Round(float64(runesNo) / (5.0 * elapsed.Seconds()) * 60.0))
-}
-
-func calculateAccuracy(runesNo, errorsNo int) float64 {
-	return math.Floor(float64(runesNo-errorsNo)/float64(runesNo)*10000) / 10000
 }
