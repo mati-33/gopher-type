@@ -16,8 +16,9 @@ var (
 	white  = lipgloss.Color("#ffffff")
 	grey   = lipgloss.Color("#bbbbbb")
 	red    = lipgloss.Color("#ff005f")
-	blue   = lipgloss.Color("#65d0dc")
+	blue   = lipgloss.Color("#0087ff")
 	yellow = lipgloss.Color("#ffff30")
+	green  = lipgloss.Color("#3d9937")
 
 	cursorStyle = lipgloss.NewStyle().Underline(true).Foreground(grey)
 	beforeStyle = lipgloss.NewStyle().Foreground(grey)
@@ -26,6 +27,7 @@ var (
 	textStyle   = lipgloss.NewStyle()
 	lineStyle   = lipgloss.NewStyle().MarginTop(1)
 	iconStyle   = lipgloss.NewStyle()
+	diffStyle   = lipgloss.NewStyle()
 )
 
 type result struct {
@@ -33,25 +35,68 @@ type result struct {
 	accuracy float64
 }
 
-// KONIECZNIE MUSI BYC TAK JAK NA KEYBR W NAWIASIE NA ZIELONO LUB CZERWONO ROZNICA PODLUG POPRZEDNIEGO
+type StatsComponent struct {
+	CurrentResult  *result
+	PreviousResult *result
+}
 
-func (r result) View() string {
-	if r.wpm == 0 {
+func (s StatsComponent) View() string {
+	if s.CurrentResult == nil {
 		return fmt.Sprintf("%s %s  %s %s",
 			iconStyle.Foreground(yellow).Render("󱐋"),
-			beforeStyle.Render("wpm: -"),
+			beforeStyle.Render("speed: -"),
 			iconStyle.Foreground(blue).Render("󰣉"),
 			beforeStyle.Render("accuracy: -"),
 		)
 	}
+	if s.PreviousResult == nil {
+		return fmt.Sprintf("%s %s %dwpm  %s %s %.2f%%",
+			iconStyle.Foreground(yellow).Render("󱐋"),
+			beforeStyle.Render("speed:"),
+			s.CurrentResult.wpm,
+			iconStyle.Foreground(blue).Render("󰣉"),
+			beforeStyle.Render("accuracy:"),
+			100.0*s.CurrentResult.accuracy,
+		)
+	}
 
-	return fmt.Sprintf("%s %s %d  %s %s %.2f%%",
+	var wpmDiffStr string
+	wpmDiff := s.CurrentResult.wpm - s.PreviousResult.wpm
+	if wpmDiff == 0 {
+		wpmDiffStr = ""
+	} else {
+		wpmDiffSign := "+"
+		wpmDiffColor := green
+		if wpmDiff < 0.0 {
+			wpmDiffSign = ""
+			wpmDiffColor = red
+		}
+		wpmDiffStr = diffStyle.Foreground(wpmDiffColor).Render(fmt.Sprintf(" (%s%dwpm)", wpmDiffSign, wpmDiff))
+	}
+
+	var accuracyDiffStr string
+	accuracyDiff := s.CurrentResult.accuracy - s.PreviousResult.accuracy
+	if accuracyDiff <= (1./1000.) && accuracyDiff >= (-1./1000.) {
+		accuracyDiffStr = ""
+	} else {
+		accuracyDiffSign := "+"
+		accuracyDiffColor := green
+		if accuracyDiff < 0.0 {
+			accuracyDiffSign = ""
+			accuracyDiffColor = red
+		}
+		accuracyDiffStr = diffStyle.Foreground(accuracyDiffColor).Render(fmt.Sprintf(" (%s%.2f%%)", accuracyDiffSign, accuracyDiff*100.0))
+	}
+
+	return fmt.Sprintf("%s %s %dwpm%s  %s %s %.2f%%%s",
 		iconStyle.Foreground(yellow).Render("󱐋"),
-		beforeStyle.Render("wpm:"),
-		r.wpm,
+		beforeStyle.Render("speed:"),
+		s.CurrentResult.wpm,
+		wpmDiffStr,
 		iconStyle.Foreground(blue).Render("󰣉"),
 		beforeStyle.Render("accuracy:"),
-		100.0*r.accuracy,
+		100.0*s.CurrentResult.accuracy,
+		accuracyDiffStr,
 	)
 }
 
@@ -66,9 +111,9 @@ type typingScreen struct {
 	cursor       int
 	width        int
 	height       int
-	lastResult   result
 	stopwatch    stopwatch.Model
 	textLen      int
+	stats        StatsComponent
 }
 
 func newTypingScreen(textProvider TextProvider, textLen, width, height int) typingScreen {
@@ -81,6 +126,7 @@ func newTypingScreen(textProvider TextProvider, textLen, width, height int) typi
 		height:       height,
 		stopwatch:    stopwatch.New(stopwatch.WithInterval(time.Millisecond)),
 		textLen:      textLen,
+		stats:        StatsComponent{},
 	}
 }
 
@@ -127,7 +173,10 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.cursor < len(s.text)-1 {
 				s.cursor++
 			} else {
-				s.lastResult = calculateResult(len(s.text), len(s.errors), s.stopwatch.Elapsed())
+				result := calculateResult(len(s.text), len(s.errors), s.stopwatch.Elapsed())
+				previousResult := s.stats.CurrentResult
+				s.stats.CurrentResult = &result
+				s.stats.PreviousResult = previousResult
 				s.cursor = 0
 				s.errors = []int{}
 				s.text = s.textProvider.Provide(s.textLen)
@@ -144,7 +193,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (s typingScreen) View() tea.View {
 	textWidth := int(float32(s.width) * 0.7)
-	resultOffset := int(float32(s.height) * 0.25)
+	resultOffset := int(float32(s.height) * 0.2)
 	if s.height < 14 {
 		resultOffset = 0
 	}
@@ -183,7 +232,7 @@ func (s typingScreen) View() tea.View {
 	resultView := textStyle.
 		Width(s.width).
 		Align(lipgloss.Center).
-		Render(s.lastResult.View())
+		Render(s.stats.View())
 
 	textView := lipgloss.JoinVertical(0, linesStr...)
 	textLayer := lipgloss.NewLayer(lipgloss.Place(
