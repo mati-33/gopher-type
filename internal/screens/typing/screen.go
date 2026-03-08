@@ -7,10 +7,6 @@ import (
 	"github.com/mati-33/gopher-type/internal/screens/typing/components"
 )
 
-var (
-	textStyle = lipgloss.NewStyle()
-)
-
 type TextProvider interface {
 	Provide(maxLen int) []rune
 }
@@ -78,10 +74,7 @@ func (s typingScreen) View() tea.View {
 		resultOffset = 0
 	}
 
-	resultView := textStyle.
-		Width(s.width).
-		Align(lipgloss.Center).
-		Render(s.stats.View())
+	statsView := lipgloss.PlaceHorizontal(s.width, lipgloss.Center, s.stats.View())
 
 	textView := s.text.View()
 	textLayer := lipgloss.NewLayer(lipgloss.Place(
@@ -89,7 +82,7 @@ func (s typingScreen) View() tea.View {
 		lipgloss.Center, lipgloss.Center,
 		textView,
 	),
-		lipgloss.NewLayer(resultView).Y(resultOffset),
+		lipgloss.NewLayer(statsView).Y(resultOffset),
 	)
 
 	c := lipgloss.NewCompositor(textLayer)
