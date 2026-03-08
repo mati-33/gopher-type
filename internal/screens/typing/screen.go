@@ -1,7 +1,6 @@
 package typing
 
 import (
-	"fmt"
 	"math"
 	"slices"
 	"strings"
@@ -11,15 +10,13 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/screens"
+	"github.com/mati-33/gopher-type/internal/screens/typing/components"
 )
 
 var (
-	white  = lipgloss.Color("#ffffff")
-	grey   = lipgloss.Color("#bbbbbb")
-	red    = lipgloss.Color("#ff005f")
-	blue   = lipgloss.Color("#0087ff")
-	yellow = lipgloss.Color("#ffff30")
-	green  = lipgloss.Color("#3d9937")
+	white = lipgloss.Color("#ffffff")
+	grey  = lipgloss.Color("#bbbbbb")
+	red   = lipgloss.Color("#ff005f")
 
 	cursorStyle = lipgloss.NewStyle().Underline(true).Foreground(grey)
 	beforeStyle = lipgloss.NewStyle().Foreground(grey)
@@ -27,79 +24,7 @@ var (
 	errorStyle  = lipgloss.NewStyle().Foreground(red)
 	textStyle   = lipgloss.NewStyle()
 	lineStyle   = lipgloss.NewStyle().MarginTop(1)
-	iconStyle   = lipgloss.NewStyle()
-	diffStyle   = lipgloss.NewStyle()
 )
-
-type result struct {
-	wpm      int
-	accuracy float64
-}
-
-type StatsComponent struct {
-	CurrentResult  *result
-	PreviousResult *result
-}
-
-func (s StatsComponent) View() string {
-	if s.CurrentResult == nil {
-		return fmt.Sprintf("%s %s  %s %s",
-			iconStyle.Foreground(yellow).Render("󱐋"),
-			beforeStyle.Render("speed: -"),
-			iconStyle.Foreground(blue).Render("󰣉"),
-			beforeStyle.Render("accuracy: -"),
-		)
-	}
-	if s.PreviousResult == nil {
-		return fmt.Sprintf("%s %s %dwpm  %s %s %.2f%%",
-			iconStyle.Foreground(yellow).Render("󱐋"),
-			beforeStyle.Render("speed:"),
-			s.CurrentResult.wpm,
-			iconStyle.Foreground(blue).Render("󰣉"),
-			beforeStyle.Render("accuracy:"),
-			100.0*s.CurrentResult.accuracy,
-		)
-	}
-
-	var wpmDiffStr string
-	wpmDiff := s.CurrentResult.wpm - s.PreviousResult.wpm
-	if wpmDiff == 0 {
-		wpmDiffStr = ""
-	} else {
-		wpmDiffSign := "+"
-		wpmDiffColor := green
-		if wpmDiff < 0.0 {
-			wpmDiffSign = ""
-			wpmDiffColor = red
-		}
-		wpmDiffStr = diffStyle.Foreground(wpmDiffColor).Render(fmt.Sprintf(" (%s%dwpm)", wpmDiffSign, wpmDiff))
-	}
-
-	var accuracyDiffStr string
-	accuracyDiff := s.CurrentResult.accuracy - s.PreviousResult.accuracy
-	if accuracyDiff <= (1./1000.) && accuracyDiff >= (-1./1000.) {
-		accuracyDiffStr = ""
-	} else {
-		accuracyDiffSign := "+"
-		accuracyDiffColor := green
-		if accuracyDiff < 0.0 {
-			accuracyDiffSign = ""
-			accuracyDiffColor = red
-		}
-		accuracyDiffStr = diffStyle.Foreground(accuracyDiffColor).Render(fmt.Sprintf(" (%s%.2f%%)", accuracyDiffSign, accuracyDiff*100.0))
-	}
-
-	return fmt.Sprintf("%s %s %dwpm%s  %s %s %.2f%%%s",
-		iconStyle.Foreground(yellow).Render("󱐋"),
-		beforeStyle.Render("speed:"),
-		s.CurrentResult.wpm,
-		wpmDiffStr,
-		iconStyle.Foreground(blue).Render("󰣉"),
-		beforeStyle.Render("accuracy:"),
-		100.0*s.CurrentResult.accuracy,
-		accuracyDiffStr,
-	)
-}
 
 type TextProvider interface {
 	Provide(maxLen int) []rune
@@ -114,7 +39,7 @@ type typingScreen struct {
 	height       int
 	stopwatch    stopwatch.Model
 	textLen      int
-	stats        StatsComponent
+	stats        components.Stats
 }
 
 func NewTypingScreen(textProvider TextProvider, textLen, width, height int) typingScreen {
@@ -127,7 +52,7 @@ func NewTypingScreen(textProvider TextProvider, textLen, width, height int) typi
 		height:       height,
 		stopwatch:    stopwatch.New(stopwatch.WithInterval(time.Millisecond)),
 		textLen:      textLen,
-		stats:        StatsComponent{},
+		stats:        components.NewStats(),
 	}
 }
 
@@ -174,10 +99,9 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if s.cursor < len(s.text)-1 {
 				s.cursor++
 			} else {
-				result := calculateResult(len(s.text), len(s.errors), s.stopwatch.Elapsed())
-				previousResult := s.stats.CurrentResult
-				s.stats.CurrentResult = &result
-				s.stats.PreviousResult = previousResult
+				wpm := calculateWpm(len(s.text), s.stopwatch.Elapsed())
+				acc := calculateAccuracy(len(s.text), len(s.errors))
+				s.stats.UpdateStats(&components.StatsValues{Wpm: wpm, Accuracy: acc})
 				s.cursor = 0
 				s.errors = []int{}
 				s.text = s.textProvider.Provide(s.textLen)
@@ -276,15 +200,6 @@ func splitText(text []rune, width int) [][]rune {
 	}
 
 	return lines
-}
-
-func calculateResult(runesNo, errorsNo int, elapsed time.Duration) result {
-	wpm := calculateWpm(runesNo, elapsed)
-	acc := calculateAccuracy(runesNo, errorsNo)
-	return result{
-		wpm:      wpm,
-		accuracy: acc,
-	}
 }
 
 func calculateWpm(runesNo int, elapsed time.Duration) int {
