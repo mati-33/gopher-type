@@ -45,9 +45,8 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.text.Width = int(float32(s.width) * 0.7)
 
 	case components.TextResult:
-		s.stats.UpdateStats(&components.StatsValues{
-			Wpm: msg.Wpm, Accuracy: msg.Accuracy,
-		})
+		s.stats.Wpm = msg.Wpm
+		s.stats.Accuracy = msg.Accuracy
 		s.text.Text = s.textProvider.Provide(s.wordCount)
 
 	case tea.KeyMsg:
