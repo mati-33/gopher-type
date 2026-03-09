@@ -22,8 +22,8 @@ func NewStatsStyles() StatsStyles {
 	white := lipgloss.Color("#ffffff")
 
 	return StatsStyles{
-		SpeedIcon:    lipgloss.NewStyle().Foreground(yellow),
-		AccuracyIcon: lipgloss.NewStyle().Foreground(blue),
+		SpeedIcon:    lipgloss.NewStyle().Foreground(yellow).SetString("󱐋"),
+		AccuracyIcon: lipgloss.NewStyle().Foreground(blue).SetString("󰣉"),
 		Text:         lipgloss.NewStyle().Foreground(grey),
 		Value:        lipgloss.NewStyle().Foreground(white),
 	}
@@ -42,8 +42,8 @@ func NewStats() Stats {
 }
 
 func (s Stats) View() string {
-	speedLabel := fmt.Sprintf("%s %s", s.Styles.SpeedIcon.Render("󱐋"), s.Styles.Text.Render("speed"))
-	accuracyLabel := fmt.Sprintf("%s %s", s.Styles.AccuracyIcon.Render("󰣉"), s.Styles.Text.Render("accuracy"))
+	speedLabel := fmt.Sprintf("%s %s", s.Styles.SpeedIcon.Render(), s.Styles.Text.Render("speed"))
+	accuracyLabel := fmt.Sprintf("%s %s", s.Styles.AccuracyIcon.Render(), s.Styles.Text.Render("accuracy"))
 
 	if s.Wpm == 0 {
 		return lipgloss.JoinHorizontal(lipgloss.Top,
