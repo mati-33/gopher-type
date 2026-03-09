@@ -8,26 +8,26 @@ import (
 )
 
 type TextProvider interface {
-	Provide(maxLen int) []rune
+	Provide(wordCount int) []rune
 }
 
 type typingScreen struct {
 	textProvider TextProvider
 	width        int
 	height       int
-	textLen      int
+	wordCount    int
 	stats        components.Stats
 	text         components.Text
 }
 
-func NewTypingScreen(textProvider TextProvider, textLen, width, height int) typingScreen {
+func NewTypingScreen(textProvider TextProvider, wordCount, width, height int) typingScreen {
 	return typingScreen{
 		textProvider: textProvider,
 		width:        width,
 		height:       height,
-		textLen:      textLen,
+		wordCount:    wordCount,
 		stats:        components.NewStats(),
-		text:         components.NewText(textProvider.Provide(textLen), int(float32(width)*0.7), height),
+		text:         components.NewText(textProvider.Provide(wordCount), int(float32(width)*0.7), height),
 	}
 }
 
@@ -48,13 +48,13 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.stats.UpdateStats(&components.StatsValues{
 			Wpm: msg.Wpm, Accuracy: msg.Accuracy,
 		})
-		s.text.Text = s.textProvider.Provide(s.textLen)
+		s.text.Text = s.textProvider.Provide(s.wordCount)
 
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
 			if s.text.Started {
-				s.text.Text = s.textProvider.Provide(s.textLen)
+				s.text.Text = s.textProvider.Provide(s.wordCount)
 				return s, tea.Batch(s.text.Reset()...)
 			} else {
 				return s, func() tea.Msg { return screens.PopScreen{} }

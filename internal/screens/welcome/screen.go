@@ -59,7 +59,7 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return screens.PushScreen{
 					Screen: typing.NewTypingScreen(
 						p,
-						100,
+						15,
 						s.width,
 						s.height,
 					),

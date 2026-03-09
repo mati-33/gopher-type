@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"math/rand"
 	"strings"
-	"unicode/utf8"
 )
 
 //go:embed words/eng_1k.txt
@@ -23,17 +22,12 @@ func NewWordArrayProviderFromTxtFile(fileContent string) WordArrayProvider {
 	return WordArrayProvider{words: words}
 }
 
-func (p WordArrayProvider) Provide(maxLen int) []rune {
+func (p WordArrayProvider) Provide(wordCount int) []rune {
 	l := len(p.words)
 	b := strings.Builder{}
 
-	for {
+	for range wordCount {
 		w := p.words[rand.Intn(l)]
-
-		if b.Len()+utf8.RuneCountInString(w) > maxLen {
-			break
-		}
-
 		b.WriteString(w)
 		b.WriteString(" ")
 	}
