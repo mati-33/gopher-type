@@ -59,6 +59,14 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				return s, func() tea.Msg { return screens.PopScreen{} }
 			}
+		case "ctrl+o":
+			s.wordCount++
+			s.text.Text = s.textProvider.Provide(s.wordCount)
+			return s, tea.Batch(s.text.Reset()...)
+		case "ctrl+p":
+			s.wordCount--
+			s.text.Text = s.textProvider.Provide(s.wordCount)
+			return s, tea.Batch(s.text.Reset()...)
 		}
 	}
 
