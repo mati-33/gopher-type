@@ -18,6 +18,7 @@ type typingScreen struct {
 	wordCount    int
 	stats        components.Stats
 	text         components.Text
+	info         components.Info
 }
 
 func NewTypingScreen(textProvider TextProvider, wordCount, width, height int) typingScreen {
@@ -28,6 +29,7 @@ func NewTypingScreen(textProvider TextProvider, wordCount, width, height int) ty
 		wordCount:    wordCount,
 		stats:        components.NewStats(),
 		text:         components.NewText(textProvider.Provide(wordCount), int(float32(width)*0.7), height),
+		info:         components.NewInfo(wordCount),
 	}
 }
 
@@ -60,12 +62,18 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "ctrl+o":
 			s.wordCount++
+			s.info.WordCount = s.wordCount
 			s.text.Text = s.textProvider.Provide(s.wordCount)
 			return s, tea.Batch(s.text.Reset()...)
 		case "ctrl+p":
-			s.wordCount--
-			s.text.Text = s.textProvider.Provide(s.wordCount)
-			return s, tea.Batch(s.text.Reset()...)
+			if s.wordCount > 1 {
+				s.wordCount--
+				s.info.WordCount = s.wordCount
+				s.text.Text = s.textProvider.Provide(s.wordCount)
+				return s, tea.Batch(s.text.Reset()...)
+			} else {
+				return s, nil
+			}
 		}
 	}
 
@@ -75,13 +83,19 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s typingScreen) View() tea.View {
-	resultOffset := int(float32(s.height) * 0.2)
+	bannerOffset := int(float32(s.height) * 0.2)
 
 	if s.height < 14 {
-		resultOffset = 0
+		bannerOffset = 0
 	}
 
-	statsView := lipgloss.PlaceHorizontal(s.width, lipgloss.Center, s.stats.View())
+	statsView := s.stats.View()
+	infoView := s.info.View()
+	bannerView := lipgloss.PlaceHorizontal(
+		s.width,
+		lipgloss.Center,
+		lipgloss.JoinHorizontal(lipgloss.Top, statsView, "     ", infoView),
+	)
 
 	textView := s.text.View()
 	textLayer := lipgloss.NewLayer(lipgloss.Place(
@@ -89,7 +103,7 @@ func (s typingScreen) View() tea.View {
 		lipgloss.Center, lipgloss.Center,
 		textView,
 	),
-		lipgloss.NewLayer(statsView).Y(resultOffset),
+		lipgloss.NewLayer(bannerView).Y(bannerOffset),
 	)
 
 	c := lipgloss.NewCompositor(textLayer)
