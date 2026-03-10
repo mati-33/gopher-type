@@ -5,36 +5,21 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/typing"
+	"github.com/mati-33/gopher-type/internal/screens/welcome/components"
 	textproviders "github.com/mati-33/gopher-type/internal/text_providers"
-)
-
-type choice int
-
-const (
-	practise choice = iota
-	settings
-	about
-	exit
-)
-
-const header = `
-▄▀▀ █▀▄ █▀▄ █▄█ █▀▀ █▀▄   ▀█▀ ▀▄▀ █▀▄ █▀▀
-█▄█ █▄█ █▀▀ █ █ ██▄ █▀▄    █   █  █▀▀ ██▄
-	`
-
-var (
-	headerStyle = lipgloss.NewStyle().Align(lipgloss.Center).MarginTop(1).MarginBottom(3)
 )
 
 type welcomeScreen struct {
 	width  int
 	height int
+	banner components.Banner
 }
 
 func NewWelcomeScreen(width, height int) welcomeScreen {
 	return welcomeScreen{
 		width:  width,
 		height: height,
+		banner: components.NewBanner(),
 	}
 }
 
@@ -71,8 +56,13 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (s welcomeScreen) View() tea.View {
-	headerView := headerStyle.Width(s.width).Render(header)
-	welcomeTextView := "Press ENTER to start"
+	bannerView := s.banner.View()
+	welcomeTextView := lipgloss.NewStyle().MarginTop(2).Render("Press ENTER to start")
+	screen := lipgloss.JoinVertical(lipgloss.Center, bannerView, welcomeTextView)
 
-	return tea.NewView(lipgloss.JoinVertical(lipgloss.Center, headerView, welcomeTextView))
+	return tea.NewView(lipgloss.Place(
+		s.width, s.height,
+		lipgloss.Center, 0.7,
+		screen,
+	))
 }
