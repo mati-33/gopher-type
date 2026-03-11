@@ -22,7 +22,7 @@ type Banner struct {
 	version         string
 }
 
-func NewBanner() Banner {
+func NewBanner(version string) Banner {
 	ascii := `
 ▄▀▀ █▀▄ █▀▄ █▄█ █▀▀ █▀▄   ▀█▀ ▀▄▀ █▀▄ █▀▀
 █▄█ █▄█ █▀▀ █ █ ██▄ █▀▄    █   █  █▀▀ ██▄`
@@ -38,7 +38,7 @@ func NewBanner() Banner {
 		},
 		gopherTypeAscii: ascii,
 		descr:           "typing practise app for the terminal",
-		version:         "v0.3.0",
+		version:         version,
 	}
 }
 

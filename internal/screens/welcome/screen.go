@@ -7,6 +7,7 @@ import (
 	"github.com/mati-33/gopher-type/internal/screens/typing"
 	"github.com/mati-33/gopher-type/internal/screens/welcome/components"
 	textproviders "github.com/mati-33/gopher-type/internal/text_providers"
+	"github.com/mati-33/gopher-type/internal/version"
 )
 
 type welcomeScreen struct {
@@ -19,7 +20,7 @@ func NewWelcomeScreen(width, height int) welcomeScreen {
 	return welcomeScreen{
 		width:  width,
 		height: height,
-		banner: components.NewBanner(),
+		banner: components.NewBanner(version.Version),
 	}
 }
 
