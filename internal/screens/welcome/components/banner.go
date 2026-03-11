@@ -14,7 +14,7 @@ type BannerStyles struct {
 
 type Banner struct {
 	Styles          BannerStyles
-	gopherTypeAscii string
+	GopherTypeAscii string
 	descr           string
 	version         string
 }
@@ -29,20 +29,20 @@ func NewBanner(version string) Banner {
 		Styles: BannerStyles{
 			Ascii:   lipgloss.NewStyle().Padding(1, 4).Background(lipgloss.Color("#303030")),
 			Descr:   lipgloss.NewStyle().Italic(true).Foreground(lipgloss.Color("#aaaaaa")),
-			Version: lipgloss.NewStyle().MarginBottom(2),
+			Version: lipgloss.NewStyle().MarginBottom(2).Foreground(lipgloss.Color("#aaaaaa")),
 		},
-		gopherTypeAscii: ascii,
+		GopherTypeAscii: ascii,
 		descr:           "typing practise app for the terminal",
 		version:         version,
 	}
 }
 
 func (b Banner) View() string {
-	width := lipgloss.Width(b.gopherTypeAscii)
+	width := lipgloss.Width(b.GopherTypeAscii)
 
 	return lipgloss.JoinVertical(lipgloss.Center,
-		b.Styles.Ascii.Render(b.gopherTypeAscii),
-		lipgloss.PlaceHorizontal(width, 0.15, b.Styles.Version.Render(b.version)),
+		b.Styles.Ascii.Render(b.GopherTypeAscii),
+		lipgloss.PlaceHorizontal(width, lipgloss.Right, b.Styles.Version.Render(b.version)),
 		b.Styles.Descr.Render(b.descr),
 	)
 }

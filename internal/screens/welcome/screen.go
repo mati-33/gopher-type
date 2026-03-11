@@ -14,13 +14,23 @@ type welcomeScreen struct {
 	width  int
 	height int
 	banner components.Banner
+	menu   components.Menu
 }
 
 func NewWelcomeScreen(width, height int) welcomeScreen {
+	banner := components.NewBanner(version.Version)
+	menu := components.NewMenu([]components.MenuOption{
+		{Key: "enter", Description: "practise"},
+		{Key: "m", Description: "show modes"},
+		{Key: "t", Description: "change theme"},
+		{Key: "q", Description: "quit"},
+	}, lipgloss.Width(banner.GopherTypeAscii))
+
 	return welcomeScreen{
 		width:  width,
 		height: height,
-		banner: components.NewBanner(version.Version),
+		banner: banner,
+		menu:   menu,
 	}
 }
 
@@ -58,8 +68,8 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (s welcomeScreen) View() tea.View {
 	bannerView := s.banner.View()
-	welcomeTextView := lipgloss.NewStyle().MarginTop(2).Render("Press ENTER to start")
-	screen := lipgloss.JoinVertical(lipgloss.Center, bannerView, welcomeTextView)
+	menuView := s.menu.View()
+	screen := lipgloss.JoinVertical(lipgloss.Center, bannerView, "", "", menuView)
 
 	return tea.NewView(lipgloss.Place(
 		s.width, s.height,
