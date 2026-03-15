@@ -4,7 +4,9 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/screens"
+	"github.com/mati-33/gopher-type/internal/screens/mode"
 	"github.com/mati-33/gopher-type/internal/screens/typing/components"
+	textproviders "github.com/mati-33/gopher-type/internal/text_providers"
 )
 
 type TextProvider interface {
@@ -13,6 +15,7 @@ type TextProvider interface {
 
 type typingScreen struct {
 	textProvider TextProvider
+	providerName string
 	width        int
 	height       int
 	wordCount    int
@@ -21,15 +24,18 @@ type typingScreen struct {
 	info         components.Info
 }
 
-func NewTypingScreen(textProvider TextProvider, wordCount, width, height int) typingScreen {
+func NewTypingScreen(providerName string, wordCount, width, height int) typingScreen {
+	textProvider := textproviders.MustGetProvider(providerName)
+
 	return typingScreen{
 		textProvider: textProvider,
+		providerName: "english",
 		width:        width,
 		height:       height,
 		wordCount:    wordCount,
 		stats:        components.NewStats(),
 		text:         components.NewText(textProvider.Provide(wordCount), int(float32(width)*0.7), height),
-		info:         components.NewInfo(wordCount),
+		info:         components.NewInfo(wordCount, "english"),
 	}
 }
 
@@ -50,6 +56,13 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.stats.Wpm = msg.Wpm
 		s.stats.Accuracy = msg.Accuracy
 		s.text.Text = s.textProvider.Provide(s.wordCount)
+
+	case screens.ChangeProvider:
+		p := textproviders.MustGetProvider(msg.Name)
+		s.info.Mode = msg.Name
+		s.textProvider = p
+		s.text.Text = s.textProvider.Provide(s.wordCount)
+		return s, tea.Batch(s.text.Reset()...)
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -73,6 +86,12 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return s, tea.Batch(s.text.Reset()...)
 			} else {
 				return s, nil
+			}
+		case "ctrl+n":
+			return s, func() tea.Msg {
+				return screens.PushScreen{
+					Screen: mode.NewModeScreen(s.width, s.height),
+				}
 			}
 		}
 	}

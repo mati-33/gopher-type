@@ -58,7 +58,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			return m, tea.Quit
 		}
 
@@ -68,7 +68,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case screens.PopScreen:
 		m.screenStack = m.screenStack[:len(m.screenStack)-1]
-		return m, tea.ClearScreen
+		return m, msg.Command
 	}
 
 	if len(m.screenStack) == 0 {

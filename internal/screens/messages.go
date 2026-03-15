@@ -6,4 +6,10 @@ type PushScreen struct {
 	Screen tea.Model
 }
 
-type PopScreen struct{}
+type PopScreen struct {
+	Command tea.Cmd
+}
+
+type ChangeProvider struct {
+	Name string
+}

@@ -4,17 +4,18 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/screens"
+	"github.com/mati-33/gopher-type/internal/screens/mode"
 	"github.com/mati-33/gopher-type/internal/screens/typing"
 	"github.com/mati-33/gopher-type/internal/screens/welcome/components"
-	textproviders "github.com/mati-33/gopher-type/internal/text_providers"
 	"github.com/mati-33/gopher-type/internal/version"
 )
 
 type welcomeScreen struct {
-	width  int
-	height int
-	banner components.Banner
-	menu   components.Menu
+	width        int
+	height       int
+	banner       components.Banner
+	menu         components.Menu
+	providerName string
 }
 
 func NewWelcomeScreen(width, height int) welcomeScreen {
@@ -27,10 +28,11 @@ func NewWelcomeScreen(width, height int) welcomeScreen {
 	}, lipgloss.Width(banner.GopherTypeAscii))
 
 	return welcomeScreen{
-		width:  width,
-		height: height,
-		banner: banner,
-		menu:   menu,
+		width:        width,
+		height:       height,
+		banner:       banner,
+		menu:         menu,
+		providerName: "english",
 	}
 }
 
@@ -46,15 +48,27 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.height = msg.Height
 		return s, nil
 
+	case screens.ChangeProvider:
+		s.providerName = msg.Name
+
 	case tea.KeyMsg:
 		switch msg.String() {
 
+		case "q":
+			return s, tea.Quit
+
+		case "m":
+			return s, func() tea.Msg {
+				return screens.PushScreen{
+					Screen: mode.NewModeScreen(s.width, s.height),
+				}
+			}
+
 		case "enter":
 			return s, func() tea.Msg {
-				p := textproviders.NewWordArrayProviderFromTxtFile(textproviders.Eng1k)
 				return screens.PushScreen{
 					Screen: typing.NewTypingScreen(
-						p,
+						s.providerName,
 						15,
 						s.width,
 						s.height,
@@ -62,6 +76,7 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+
 	}
 	return s, nil
 }
