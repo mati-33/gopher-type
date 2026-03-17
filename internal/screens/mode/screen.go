@@ -3,24 +3,27 @@ package mode
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/config"
 	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/mode/components"
 )
 
 type modeScreen struct {
+	config  config.Config
 	width   int
 	height  int
 	preview components.Preview
 	choices components.Choices
 }
 
-func NewModeScreen(width, height int) modeScreen {
+func NewModeScreen(config config.Config, width, height int) modeScreen {
 	choices := components.NewChoices(modes.GetModeNames())
 	mode := modes.MustGetMode(choices.Selected())
-	preview := components.NewPreview(int(float32(width)*0.55), mode.Preview())
+	preview := components.NewPreview(int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
 
 	return modeScreen{
+		config:  config,
 		width:   width,
 		height:  height,
 		preview: preview,
@@ -35,8 +38,8 @@ func (m modeScreen) Init() tea.Cmd {
 func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case components.ChoiceChanged:
-		p := modes.MustGetMode(msg.Name)
-		m.preview.Text = p.Preview()
+		mode := modes.MustGetMode(msg.Name)
+		m.preview.Text = string(mode.Generate(m.config.PreviewSize))
 
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -45,6 +48,11 @@ func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "r":
+			name := m.choices.Selected()
+			mode := modes.MustGetMode(name)
+			m.preview.Text = string(mode.Generate(m.config.PreviewSize))
+
 		case "enter":
 			name := m.choices.Selected()
 			return m, func() tea.Msg {

@@ -3,6 +3,7 @@ package welcome
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/config"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/mode"
 	"github.com/mati-33/gopher-type/internal/screens/typing"
@@ -11,14 +12,15 @@ import (
 )
 
 type welcomeScreen struct {
-	width        int
-	height       int
-	banner       components.Banner
-	menu         components.Menu
-	providerName string
+	config   config.Config
+	width    int
+	height   int
+	banner   components.Banner
+	menu     components.Menu
+	modeName string
 }
 
-func NewWelcomeScreen(width, height int) welcomeScreen {
+func NewWelcomeScreen(config config.Config, width, height int) welcomeScreen {
 	banner := components.NewBanner(version.Version)
 	menu := components.NewMenu([]components.MenuOption{
 		{Key: "enter", Description: "practise"},
@@ -28,11 +30,12 @@ func NewWelcomeScreen(width, height int) welcomeScreen {
 	}, lipgloss.Width(banner.GopherTypeAscii))
 
 	return welcomeScreen{
-		width:        width,
-		height:       height,
-		banner:       banner,
-		menu:         menu,
-		providerName: "english",
+		width:    width,
+		height:   height,
+		banner:   banner,
+		menu:     menu,
+		config:   config,
+		modeName: config.InitMode,
 	}
 }
 
@@ -49,7 +52,7 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return s, nil
 
 	case screens.ChangeProvider:
-		s.providerName = msg.Name
+		s.modeName = msg.Name
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -60,7 +63,7 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "m":
 			return s, func() tea.Msg {
 				return screens.PushScreen{
-					Screen: mode.NewModeScreen(s.width, s.height),
+					Screen: mode.NewModeScreen(s.config, s.width, s.height),
 				}
 			}
 
@@ -68,8 +71,7 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return s, func() tea.Msg {
 				return screens.PushScreen{
 					Screen: typing.NewTypingScreen(
-						s.providerName,
-						15,
+						s.config,
 						s.width,
 						s.height,
 					),

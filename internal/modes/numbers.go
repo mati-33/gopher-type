@@ -28,10 +28,6 @@ func (p numberMode) Name() string {
 	return "numbers"
 }
 
-func (p numberMode) Preview() string {
-	return "1983 421 8723 668 8524 75 49 334 50 33 655 349 4030 94 8 59 141 6721 1801 6080"
-}
-
 func (p numberMode) genNum() int {
 	x := rand.Intn(4)
 	num := 0

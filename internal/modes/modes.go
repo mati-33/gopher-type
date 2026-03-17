@@ -3,7 +3,6 @@ package modes
 type Mode interface {
 	Generate(wordCount int) []rune
 	Name() string
-	Preview() string
 }
 
 var registry = []Mode{

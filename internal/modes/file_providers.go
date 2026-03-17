@@ -37,10 +37,6 @@ func (p en1kMode) Name() string {
 	return "english"
 }
 
-func (p en1kMode) Preview() string {
-	return "rope by paragraph sound small match country best thought agree chord came famous car describe"
-}
-
 func newEn1kMode() Mode {
 	file, _ := wordsDir.ReadFile("words/en_1k.txt")
 	return en1kMode{
@@ -54,10 +50,6 @@ type pl2kMode struct {
 
 func (p pl2kMode) Name() string {
 	return "polish"
-}
-
-func (p pl2kMode) Preview() string {
-	return "miejscowość papier znak lęk narzędzie równocześnie dawny cienki czerwony usłyszeć padać przyprawa odkąd spokojnie"
 }
 
 func newPl2kMode() Mode {

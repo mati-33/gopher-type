@@ -3,6 +3,7 @@ package typing
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/config"
 	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/mode"
@@ -10,6 +11,7 @@ import (
 )
 
 type typingScreen struct {
+	config       config.Config
 	mode         modes.Mode
 	providerName string
 	width        int
@@ -20,17 +22,19 @@ type typingScreen struct {
 	info         components.Info
 }
 
-func NewTypingScreen(modeName string, wordCount, width, height int) typingScreen {
-	mode := modes.MustGetMode(modeName)
+func NewTypingScreen(config config.Config, width, height int) typingScreen {
+	mode := modes.MustGetMode(config.InitMode)
+	wc := config.InitWordCount
 
 	return typingScreen{
 		mode:      mode,
 		width:     width,
 		height:    height,
-		wordCount: wordCount,
+		wordCount: config.InitWordCount,
 		stats:     components.NewStats(),
-		text:      components.NewText(mode.Generate(wordCount), int(float32(width)*0.7), height),
-		info:      components.NewInfo(wordCount, mode.Name()),
+		text:      components.NewText(mode.Generate(wc), int(float32(width)*0.7), height),
+		info:      components.NewInfo(wc, mode.Name()),
+		config:    config,
 	}
 }
 
@@ -84,7 +88,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+n":
 			return s, func() tea.Msg {
 				return screens.PushScreen{
-					Screen: mode.NewModeScreen(s.width, s.height),
+					Screen: mode.NewModeScreen(s.config, s.width, s.height),
 				}
 			}
 		}
