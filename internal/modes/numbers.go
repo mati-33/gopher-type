@@ -1,4 +1,4 @@
-package textproviders
+package modes
 
 import (
 	"fmt"
@@ -6,11 +6,11 @@ import (
 	"strings"
 )
 
-type numberProvider struct {
+type numberMode struct {
 	max int
 }
 
-func (p numberProvider) Provide(wordCount int) []rune {
+func (p numberMode) Generate(wordCount int) []rune {
 	b := strings.Builder{}
 
 	for i := range wordCount {
@@ -24,15 +24,15 @@ func (p numberProvider) Provide(wordCount int) []rune {
 	return []rune(b.String())
 }
 
-func (p numberProvider) Name() string {
+func (p numberMode) Name() string {
 	return "numbers"
 }
 
-func (p numberProvider) Preview() string {
+func (p numberMode) Preview() string {
 	return "1983 421 8723 668 8524 75 49 334 50 33 655 349 4030 94 8 59 141 6721 1801 6080"
 }
 
-func (p numberProvider) genNum() int {
+func (p numberMode) genNum() int {
 	x := rand.Intn(4)
 	num := 0
 	switch x {
@@ -48,8 +48,8 @@ func (p numberProvider) genNum() int {
 	return num
 }
 
-func newNumberProvider() Provider {
-	return numberProvider{
+func newNumberMode() Mode {
+	return numberMode{
 		max: 1000,
 	}
 }

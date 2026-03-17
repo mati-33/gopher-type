@@ -3,9 +3,9 @@ package mode
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/mode/components"
-	"github.com/mati-33/gopher-type/internal/text_providers"
 )
 
 type modeScreen struct {
@@ -16,9 +16,9 @@ type modeScreen struct {
 }
 
 func NewModeScreen(width, height int) modeScreen {
-	choices := components.NewChoices(textproviders.GetProviderNames())
-	provider := textproviders.MustGetProvider(choices.Selected())
-	preview := components.NewPreview(int(float32(width)*0.55), provider.Preview())
+	choices := components.NewChoices(modes.GetModeNames())
+	mode := modes.MustGetMode(choices.Selected())
+	preview := components.NewPreview(int(float32(width)*0.55), mode.Preview())
 
 	return modeScreen{
 		width:   width,
@@ -35,7 +35,7 @@ func (m modeScreen) Init() tea.Cmd {
 func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case components.ChoiceChanged:
-		p := textproviders.MustGetProvider(msg.Name)
+		p := modes.MustGetMode(msg.Name)
 		m.preview.Text = p.Preview()
 
 	case tea.WindowSizeMsg:

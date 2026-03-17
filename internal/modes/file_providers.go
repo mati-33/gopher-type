@@ -1,4 +1,4 @@
-package textproviders
+package modes
 
 import (
 	"embed"
@@ -9,11 +9,11 @@ import (
 //go:embed words/*.txt
 var wordsDir embed.FS
 
-type fileProvider struct {
+type fileMode struct {
 	words []string
 }
 
-func (p fileProvider) Provide(wordCount int) []rune {
+func (p fileMode) Generate(wordCount int) []rune {
 	l := len(p.words)
 	b := strings.Builder{}
 
@@ -29,40 +29,40 @@ func (p fileProvider) Provide(wordCount int) []rune {
 	return []rune(b.String())
 }
 
-type en1kProvider struct {
-	fileProvider
+type en1kMode struct {
+	fileMode
 }
 
-func (p en1kProvider) Name() string {
+func (p en1kMode) Name() string {
 	return "english"
 }
 
-func (p en1kProvider) Preview() string {
+func (p en1kMode) Preview() string {
 	return "rope by paragraph sound small match country best thought agree chord came famous car describe"
 }
 
-func newEn1kProvider() Provider {
+func newEn1kMode() Mode {
 	file, _ := wordsDir.ReadFile("words/en_1k.txt")
-	return en1kProvider{
-		fileProvider{words: strings.Fields(string(file))},
+	return en1kMode{
+		fileMode{words: strings.Fields(string(file))},
 	}
 }
 
-type pl2kProvider struct {
-	fileProvider
+type pl2kMode struct {
+	fileMode
 }
 
-func (p pl2kProvider) Name() string {
+func (p pl2kMode) Name() string {
 	return "polish"
 }
 
-func (p pl2kProvider) Preview() string {
+func (p pl2kMode) Preview() string {
 	return "miejscowość papier znak lęk narzędzie równocześnie dawny cienki czerwony usłyszeć padać przyprawa odkąd spokojnie"
 }
 
-func newPl2kProvider() Provider {
+func newPl2kMode() Mode {
 	file, _ := wordsDir.ReadFile("words/pl_2k.txt")
-	return pl2kProvider{
-		fileProvider{words: strings.Fields(string(file))},
+	return pl2kMode{
+		fileMode{words: strings.Fields(string(file))},
 	}
 }

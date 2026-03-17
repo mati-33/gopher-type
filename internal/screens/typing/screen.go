@@ -3,14 +3,14 @@ package typing
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/mode"
 	"github.com/mati-33/gopher-type/internal/screens/typing/components"
-	textproviders "github.com/mati-33/gopher-type/internal/text_providers"
 )
 
 type typingScreen struct {
-	textProvider textproviders.Provider
+	mode         modes.Mode
 	providerName string
 	width        int
 	height       int
@@ -20,17 +20,17 @@ type typingScreen struct {
 	info         components.Info
 }
 
-func NewTypingScreen(providerName string, wordCount, width, height int) typingScreen {
-	textProvider := textproviders.MustGetProvider(providerName)
+func NewTypingScreen(modeName string, wordCount, width, height int) typingScreen {
+	mode := modes.MustGetMode(modeName)
 
 	return typingScreen{
-		textProvider: textProvider,
-		width:        width,
-		height:       height,
-		wordCount:    wordCount,
-		stats:        components.NewStats(),
-		text:         components.NewText(textProvider.Provide(wordCount), int(float32(width)*0.7), height),
-		info:         components.NewInfo(wordCount, textProvider.Name()),
+		mode:      mode,
+		width:     width,
+		height:    height,
+		wordCount: wordCount,
+		stats:     components.NewStats(),
+		text:      components.NewText(mode.Generate(wordCount), int(float32(width)*0.7), height),
+		info:      components.NewInfo(wordCount, mode.Name()),
 	}
 }
 
@@ -50,19 +50,19 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case components.TextResult:
 		s.stats.Wpm = msg.Wpm
 		s.stats.Accuracy = msg.Accuracy
-		s.text.Text = s.textProvider.Provide(s.wordCount)
+		s.text.Text = s.mode.Generate(s.wordCount)
 
 	case screens.ChangeProvider:
-		s.textProvider = textproviders.MustGetProvider(msg.Name)
-		s.info.Mode = s.textProvider.Name()
-		s.text.Text = s.textProvider.Provide(s.wordCount)
+		s.mode = modes.MustGetMode(msg.Name)
+		s.info.Mode = s.mode.Name()
+		s.text.Text = s.mode.Generate(s.wordCount)
 		return s, tea.Batch(s.text.Reset()...)
 
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
 			if s.text.Started {
-				s.text.Text = s.textProvider.Provide(s.wordCount)
+				s.text.Text = s.mode.Generate(s.wordCount)
 				return s, tea.Batch(s.text.Reset()...)
 			} else {
 				return s, func() tea.Msg { return screens.PopScreen{} }
@@ -70,13 +70,13 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+o":
 			s.wordCount++
 			s.info.WordCount = s.wordCount
-			s.text.Text = s.textProvider.Provide(s.wordCount)
+			s.text.Text = s.mode.Generate(s.wordCount)
 			return s, tea.Batch(s.text.Reset()...)
 		case "ctrl+p":
 			if s.wordCount > 1 {
 				s.wordCount--
 				s.info.WordCount = s.wordCount
-				s.text.Text = s.textProvider.Provide(s.wordCount)
+				s.text.Text = s.mode.Generate(s.wordCount)
 				return s, tea.Batch(s.text.Reset()...)
 			} else {
 				return s, nil

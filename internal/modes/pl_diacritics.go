@@ -1,16 +1,16 @@
-package textproviders
+package modes
 
 import (
 	"math/rand"
 )
 
-type plDiacriticsProvider struct {
+type plDiacriticsMode struct {
 	letters []rune
 	min     int
 	max     int
 }
 
-func (p plDiacriticsProvider) Provide(wordCount int) []rune {
+func (p plDiacriticsMode) Generate(wordCount int) []rune {
 	avgWordLen := (p.min + p.max) / 2
 	ret := make([]rune, 0, wordCount*avgWordLen+wordCount-1)
 
@@ -25,15 +25,15 @@ func (p plDiacriticsProvider) Provide(wordCount int) []rune {
 	return ret
 }
 
-func (p plDiacriticsProvider) Name() string {
+func (p plDiacriticsMode) Name() string {
 	return "polish diacritics"
 }
 
-func (p plDiacriticsProvider) Preview() string {
+func (p plDiacriticsMode) Preview() string {
 	return "ńżłć ąąńść śłćąś źąśź ćółżó żźśó żśęę ółńźń ęąóńź żśłć ąółóźó ółę óńęńć ćóżę ćźśąęłó"
 }
 
-func (p plDiacriticsProvider) genWord() []rune {
+func (p plDiacriticsMode) genWord() []rune {
 	length := rand.Intn(p.max-p.min) + p.min
 	word := make([]rune, 0, length)
 
@@ -44,8 +44,8 @@ func (p plDiacriticsProvider) genWord() []rune {
 	return word
 }
 
-func newPlDiacriticsProvider() Provider {
-	return plDiacriticsProvider{
+func newPlDiacriticsMode() Mode {
+	return plDiacriticsMode{
 		letters: []rune("ąćęłśńóżź"),
 		min:     3,
 		max:     8,
