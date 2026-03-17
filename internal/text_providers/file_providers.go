@@ -29,12 +29,40 @@ func (p fileProvider) Provide(wordCount int) []rune {
 	return []rune(b.String())
 }
 
+type en1kProvider struct {
+	fileProvider
+}
+
+func (p en1kProvider) Name() string {
+	return "english"
+}
+
+func (p en1kProvider) Preview() string {
+	return "rope by paragraph sound small match country best thought agree chord came famous car describe"
+}
+
 func newEn1kProvider() Provider {
 	file, _ := wordsDir.ReadFile("words/en_1k.txt")
-	return fileProvider{words: strings.Fields(string(file))}
+	return en1kProvider{
+		fileProvider{words: strings.Fields(string(file))},
+	}
+}
+
+type pl2kProvider struct {
+	fileProvider
+}
+
+func (p pl2kProvider) Name() string {
+	return "polish"
+}
+
+func (p pl2kProvider) Preview() string {
+	return "miejscowość papier znak lęk narzędzie równocześnie dawny cienki czerwony usłyszeć padać przyprawa odkąd spokojnie"
 }
 
 func newPl2kProvider() Provider {
 	file, _ := wordsDir.ReadFile("words/pl_2k.txt")
-	return fileProvider{words: strings.Fields(string(file))}
+	return pl2kProvider{
+		fileProvider{words: strings.Fields(string(file))},
+	}
 }

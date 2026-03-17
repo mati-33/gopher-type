@@ -9,12 +9,8 @@ import (
 	textproviders "github.com/mati-33/gopher-type/internal/text_providers"
 )
 
-type TextProvider interface {
-	Provide(wordCount int) []rune
-}
-
 type typingScreen struct {
-	textProvider TextProvider
+	textProvider textproviders.Provider
 	providerName string
 	width        int
 	height       int
@@ -29,13 +25,12 @@ func NewTypingScreen(providerName string, wordCount, width, height int) typingSc
 
 	return typingScreen{
 		textProvider: textProvider,
-		providerName: "english",
 		width:        width,
 		height:       height,
 		wordCount:    wordCount,
 		stats:        components.NewStats(),
 		text:         components.NewText(textProvider.Provide(wordCount), int(float32(width)*0.7), height),
-		info:         components.NewInfo(wordCount, "english"),
+		info:         components.NewInfo(wordCount, textProvider.Name()),
 	}
 }
 
@@ -58,9 +53,8 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.text.Text = s.textProvider.Provide(s.wordCount)
 
 	case screens.ChangeProvider:
-		p := textproviders.MustGetProvider(msg.Name)
-		s.info.Mode = msg.Name
-		s.textProvider = p
+		s.textProvider = textproviders.MustGetProvider(msg.Name)
+		s.info.Mode = s.textProvider.Name()
 		s.text.Text = s.textProvider.Provide(s.wordCount)
 		return s, tea.Batch(s.text.Reset()...)
 

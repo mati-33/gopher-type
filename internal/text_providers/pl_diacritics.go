@@ -25,6 +25,14 @@ func (p plDiacriticsProvider) Provide(wordCount int) []rune {
 	return ret
 }
 
+func (p plDiacriticsProvider) Name() string {
+	return "polish diacritics"
+}
+
+func (p plDiacriticsProvider) Preview() string {
+	return "ńżłć ąąńść śłćąś źąśź ćółżó żźśó żśęę ółńźń ęąóńź żśłć ąółóźó ółę óńęńć ćóżę ćźśąęłó"
+}
+
 func (p plDiacriticsProvider) genWord() []rune {
 	length := rand.Intn(p.max-p.min) + p.min
 	word := make([]rune, 0, length)

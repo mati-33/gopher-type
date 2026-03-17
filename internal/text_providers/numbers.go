@@ -24,6 +24,14 @@ func (p numberProvider) Provide(wordCount int) []rune {
 	return []rune(b.String())
 }
 
+func (p numberProvider) Name() string {
+	return "numbers"
+}
+
+func (p numberProvider) Preview() string {
+	return "1983 421 8723 668 8524 75 49 334 50 33 655 349 4030 94 8 59 141 6721 1801 6080"
+}
+
 func (p numberProvider) genNum() int {
 	x := rand.Intn(4)
 	num := 0
