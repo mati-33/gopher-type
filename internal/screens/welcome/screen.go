@@ -22,7 +22,7 @@ func NewWelcomeScreen(width, height int) welcomeScreen {
 	banner := components.NewBanner(version.Version)
 	menu := components.NewMenu([]components.MenuOption{
 		{Key: "enter", Description: "practise"},
-		{Key: "m", Description: "show modes"},
+		{Key: "m", Description: "select mode"},
 		{Key: "t", Description: "change theme"},
 		{Key: "q", Description: "quit"},
 	}, lipgloss.Width(banner.GopherTypeAscii))
