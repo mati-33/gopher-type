@@ -6,21 +6,20 @@ import (
 	"github.com/mati-33/gopher-type/internal/config"
 	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/screens"
-	"github.com/mati-33/gopher-type/internal/screens/mode/components"
 )
 
 type modeScreen struct {
 	config  config.Config
 	width   int
 	height  int
-	preview components.Preview
-	choices components.Choices
+	preview Preview
+	choices Choices
 }
 
 func NewModeScreen(config config.Config, width, height int) modeScreen {
-	choices := components.NewChoices(modes.GetModeNames())
+	choices := NewChoices(modes.GetModeNames())
 	mode := modes.MustGetMode(choices.Selected())
-	preview := components.NewPreview(int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
+	preview := NewPreview(int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
 
 	return modeScreen{
 		config:  config,
@@ -37,7 +36,7 @@ func (m modeScreen) Init() tea.Cmd {
 
 func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case components.ChoiceChanged:
+	case ChoiceChanged:
 		mode := modes.MustGetMode(msg.Name)
 		m.preview.Text = string(mode.Generate(m.config.PreviewSize))
 

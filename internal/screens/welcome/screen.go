@@ -7,7 +7,6 @@ import (
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/mode"
 	"github.com/mati-33/gopher-type/internal/screens/typing"
-	"github.com/mati-33/gopher-type/internal/screens/welcome/components"
 	"github.com/mati-33/gopher-type/internal/version"
 )
 
@@ -15,14 +14,14 @@ type welcomeScreen struct {
 	config   config.Config
 	width    int
 	height   int
-	banner   components.Banner
-	menu     components.Menu
+	banner   Banner
+	menu     Menu
 	modeName string
 }
 
 func NewWelcomeScreen(config config.Config, width, height int) welcomeScreen {
-	banner := components.NewBanner(version.Version)
-	menu := components.NewMenu([]components.MenuOption{
+	banner := NewBanner(version.Version)
+	menu := NewMenu([]MenuOption{
 		{Key: "enter", Description: "practise"},
 		{Key: "m", Description: "select mode"},
 		{Key: "t", Description: "change theme"},

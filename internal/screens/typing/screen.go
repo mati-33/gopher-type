@@ -7,7 +7,6 @@ import (
 	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/mode"
-	"github.com/mati-33/gopher-type/internal/screens/typing/components"
 )
 
 type typingScreen struct {
@@ -17,9 +16,9 @@ type typingScreen struct {
 	width        int
 	height       int
 	wordCount    int
-	stats        components.Stats
-	text         components.Text
-	info         components.Info
+	stats        Stats
+	text         Text
+	info         Info
 }
 
 func NewTypingScreen(config config.Config, width, height int) typingScreen {
@@ -31,9 +30,9 @@ func NewTypingScreen(config config.Config, width, height int) typingScreen {
 		width:     width,
 		height:    height,
 		wordCount: config.InitWordCount,
-		stats:     components.NewStats(),
-		text:      components.NewText(mode.Generate(wc), int(float32(width)*0.7), height),
-		info:      components.NewInfo(wc, mode.Name()),
+		stats:     NewStats(),
+		text:      NewText(mode.Generate(wc), int(float32(width)*0.7), height),
+		info:      NewInfo(wc, mode.Name()),
 		config:    config,
 	}
 }
@@ -51,7 +50,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.height = msg.Height
 		s.text.Width = int(float32(s.width) * 0.7)
 
-	case components.TextResult:
+	case TextResult:
 		s.stats.Wpm = msg.Wpm
 		s.stats.Accuracy = msg.Accuracy
 		s.text.Text = s.mode.Generate(s.wordCount)

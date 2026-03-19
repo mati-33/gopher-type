@@ -1,4 +1,4 @@
-package components
+package typing
 
 import (
 	"math"
@@ -29,7 +29,7 @@ func NewTextStyles() TextStyles {
 		After:  lipgloss.NewStyle().Foreground(white),
 		Cursor: lipgloss.NewStyle().Underline(true).Foreground(grey),
 		Error:  lipgloss.NewStyle().Foreground(red),
-		Lines:  lipgloss.NewStyle().MarginTop(1),
+		Lines:  lipgloss.NewStyle().MarginTop(1).Align(lipgloss.Left),
 	}
 }
 
