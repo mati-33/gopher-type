@@ -20,6 +20,7 @@ type welcomeScreen struct {
 	modeName string
 	keybinds keybinds
 	theme    themes.Theme
+	info     info
 }
 
 func NewWelcomeScreen(config config.Config, theme themes.Theme, width, height int) welcomeScreen {
@@ -41,6 +42,7 @@ func NewWelcomeScreen(config config.Config, theme themes.Theme, width, height in
 		modeName: config.InitMode,
 		keybinds: keybinds,
 		theme:    theme,
+		info:     newInfo(theme, config.InitMode, config.InitTheme, lipgloss.Width(banner.GopherTypeAscii)),
 	}
 }
 
@@ -92,7 +94,8 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (s welcomeScreen) View() tea.View {
 	bannerView := s.banner.View()
 	menuView := s.menu.View()
-	screen := lipgloss.JoinVertical(lipgloss.Center, bannerView, "", "", menuView)
+	infoView := s.info.View()
+	screen := lipgloss.JoinVertical(lipgloss.Center, bannerView, "", "", menuView, infoView)
 
 	return tea.NewView(lipgloss.Place(
 		s.width, s.height,
