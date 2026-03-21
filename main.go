@@ -36,10 +36,11 @@ type model struct {
 }
 
 func newModel() model {
+	config := config.NewDefault()
 	return model{
 		screenStack: []tea.Model{},
-		config:      config.NewDefault(),
-		theme:       themes.NewDefault(),
+		config:      config,
+		theme:       themes.MustGetTheme(config.InitTheme),
 	}
 }
 

@@ -40,7 +40,7 @@ func NewInfo(theme themes.Theme, wordCount int, mode string) Info {
 func (i Info) View() string {
 	count := lipgloss.JoinVertical(lipgloss.Left,
 		fmt.Sprintf("%s %s", i.Styles.WordCountIcon.Render(), i.Styles.Text.Render("word count")),
-		fmt.Sprintf("  %d", i.WordCount),
+		fmt.Sprintf("  %s", i.Styles.Value.Render(fmt.Sprintf("%d", i.WordCount))),
 	)
 	mode := lipgloss.JoinVertical(lipgloss.Left,
 		fmt.Sprintf("%s %s", i.Styles.ModeIcon.Render(), i.Styles.Text.Render("mode")),
