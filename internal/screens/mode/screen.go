@@ -9,24 +9,36 @@ import (
 )
 
 type modeScreen struct {
-	config  config.Config
-	width   int
-	height  int
-	preview Preview
-	choices Choices
+	config   config.Config
+	width    int
+	height   int
+	preview  Preview
+	choices  Choices
+	help     screens.Help
+	keybinds keybinds
 }
 
 func NewModeScreen(config config.Config, width, height int) modeScreen {
 	choices := NewChoices(modes.GetModeNames())
 	mode := modes.MustGetMode(choices.Selected())
 	preview := NewPreview(int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
+	keybinds := newKeybinds()
 
 	return modeScreen{
-		config:  config,
-		width:   width,
-		height:  height,
-		preview: preview,
-		choices: choices,
+		config:   config,
+		width:    width,
+		height:   height,
+		preview:  preview,
+		choices:  choices,
+		keybinds: keybinds,
+		help: screens.NewHelp([]screens.Keybind{
+			keybinds.Next,
+			keybinds.Previous,
+			keybinds.Refresh,
+			keybinds.Choose,
+			keybinds.Cancel,
+			keybinds.Help,
+		}),
 	}
 }
 
@@ -47,12 +59,13 @@ func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "r":
+
+		case m.keybinds.Refresh.Key:
 			name := m.choices.Selected()
 			mode := modes.MustGetMode(name)
 			m.preview.Text = string(mode.Generate(m.config.PreviewSize))
 
-		case "enter":
+		case m.keybinds.Choose.Key:
 			name := m.choices.Selected()
 			return m, func() tea.Msg {
 				return screens.PopScreen{
@@ -63,10 +76,15 @@ func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					},
 				}
 			}
-		case "esc":
+
+		case m.keybinds.Cancel.Key:
 			return m, func() tea.Msg {
 				return screens.PopScreen{}
 			}
+
+		case m.keybinds.Help.Key:
+			m.help.Toggle()
+			return m, nil
 		}
 	}
 
@@ -79,10 +97,17 @@ func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m modeScreen) View() tea.View {
 	choicesView := m.choices.View()
 	previewView := m.preview.View()
+	helpView := m.help.View()
+	helpOffset := max(0, m.width-lipgloss.Width(helpView)-2)
 
-	return tea.NewView(lipgloss.Place(
+	layer := lipgloss.NewLayer(lipgloss.Place(
 		m.width, m.height,
 		lipgloss.Center, lipgloss.Center,
 		lipgloss.JoinHorizontal(lipgloss.Top, choicesView, "     ", previewView),
-	))
+	),
+		lipgloss.NewLayer(helpView).Y(m.height-lipgloss.Height(helpView)).X(helpOffset),
+	)
+
+	c := lipgloss.NewCompositor(layer)
+	return tea.NewView(c.Render())
 }

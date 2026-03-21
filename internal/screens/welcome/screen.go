@@ -17,15 +17,17 @@ type welcomeScreen struct {
 	banner   Banner
 	menu     Menu
 	modeName string
+	keybinds keybinds
 }
 
 func NewWelcomeScreen(config config.Config, width, height int) welcomeScreen {
+	keybinds := newKeybind()
 	banner := NewBanner(version.Version)
-	menu := NewMenu([]MenuOption{
-		{Key: "enter", Description: "practise"},
-		{Key: "m", Description: "select mode"},
-		{Key: "t", Description: "change theme"},
-		{Key: "q", Description: "quit"},
+	menu := NewMenu([]screens.Keybind{
+		keybinds.Practise,
+		keybinds.Mode,
+		keybinds.Theme,
+		keybinds.Quit,
 	}, lipgloss.Width(banner.GopherTypeAscii))
 
 	return welcomeScreen{
@@ -35,6 +37,7 @@ func NewWelcomeScreen(config config.Config, width, height int) welcomeScreen {
 		menu:     menu,
 		config:   config,
 		modeName: config.InitMode,
+		keybinds: keybinds,
 	}
 }
 
@@ -56,17 +59,17 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 
-		case "q":
+		case s.keybinds.Quit.Key:
 			return s, tea.Quit
 
-		case "m":
+		case s.keybinds.Mode.Key:
 			return s, func() tea.Msg {
 				return screens.PushScreen{
 					Screen: mode.NewModeScreen(s.config, s.width, s.height),
 				}
 			}
 
-		case "enter":
+		case s.keybinds.Practise.Key:
 			return s, func() tea.Msg {
 				return screens.PushScreen{
 					Screen: typing.NewTypingScreen(

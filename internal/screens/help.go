@@ -1,0 +1,56 @@
+package screens
+
+import (
+	"fmt"
+
+	"charm.land/lipgloss/v2"
+)
+
+type Keybind struct {
+	Key  string
+	Desc string
+}
+
+type HelpStyles struct {
+	Key  lipgloss.Style
+	Desc lipgloss.Style
+}
+
+type Help struct {
+	Styles   HelpStyles
+	Expanded bool
+	Keybinds []Keybind
+}
+
+func NewHelp(keybinds []Keybind) Help {
+	return Help{
+		Styles: HelpStyles{
+			Key:  lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff")),
+			Desc: lipgloss.NewStyle().Foreground(lipgloss.Color("#aaaaaa")),
+		},
+		Keybinds: keybinds,
+	}
+}
+
+func (h Help) View() string {
+	if !h.Expanded {
+		return fmt.Sprintf("%s %s", h.Styles.Key.Render("f1"), h.Styles.Desc.Render("help"))
+	}
+
+	keys := make([]string, 0, len(h.Keybinds))
+	descs := make([]string, 0, len(h.Keybinds))
+
+	for _, k := range h.Keybinds {
+		keys = append(keys, h.Styles.Key.Render(k.Key))
+		descs = append(descs, h.Styles.Desc.Render(k.Desc))
+	}
+
+	keysView := lipgloss.JoinVertical(lipgloss.Left, keys...)
+	descsView := lipgloss.JoinVertical(lipgloss.Left, descs...)
+
+	return lipgloss.JoinHorizontal(lipgloss.Top, keysView, "  ", descsView)
+}
+
+func (h *Help) Toggle() {
+	h.Expanded = !h.Expanded
+}

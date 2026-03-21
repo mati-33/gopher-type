@@ -19,11 +19,14 @@ type typingScreen struct {
 	stats        Stats
 	text         Text
 	info         Info
+	help         screens.Help
+	keybinds     keybinds
 }
 
 func NewTypingScreen(config config.Config, width, height int) typingScreen {
 	mode := modes.MustGetMode(config.InitMode)
 	wc := config.InitWordCount
+	keybinds := newKeybinds()
 
 	return typingScreen{
 		mode:      mode,
@@ -34,6 +37,14 @@ func NewTypingScreen(config config.Config, width, height int) typingScreen {
 		text:      NewText(mode.Generate(wc), int(float32(width)*0.7), height),
 		info:      NewInfo(wc, mode.Name()),
 		config:    config,
+		keybinds:  keybinds,
+		help: screens.NewHelp([]screens.Keybind{
+			keybinds.IncWordCount,
+			keybinds.DecWordCount,
+			keybinds.ChangeMode,
+			keybinds.GoBack,
+			keybinds.Help,
+		}),
 	}
 }
 
@@ -63,19 +74,22 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc":
+
+		case s.keybinds.GoBack.Key:
 			if s.text.Started {
 				s.text.Text = s.mode.Generate(s.wordCount)
 				return s, tea.Batch(s.text.Reset()...)
 			} else {
 				return s, func() tea.Msg { return screens.PopScreen{} }
 			}
-		case "ctrl+o":
+
+		case s.keybinds.IncWordCount.Key:
 			s.wordCount++
 			s.info.WordCount = s.wordCount
 			s.text.Text = s.mode.Generate(s.wordCount)
 			return s, tea.Batch(s.text.Reset()...)
-		case "ctrl+p":
+
+		case s.keybinds.DecWordCount.Key:
 			if s.wordCount > 1 {
 				s.wordCount--
 				s.info.WordCount = s.wordCount
@@ -84,12 +98,17 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				return s, nil
 			}
-		case "ctrl+n":
+
+		case s.keybinds.ChangeMode.Key:
 			return s, func() tea.Msg {
 				return screens.PushScreen{
 					Screen: mode.NewModeScreen(s.config, s.width, s.height),
 				}
 			}
+
+		case s.keybinds.Help.Key:
+			s.help.Toggle()
+			return s, nil
 		}
 	}
 
@@ -107,6 +126,10 @@ func (s typingScreen) View() tea.View {
 
 	statsView := s.stats.View()
 	infoView := s.info.View()
+	helpView := s.help.View()
+
+	helpOffset := max(0, s.width-lipgloss.Width(helpView)-2)
+
 	bannerView := lipgloss.PlaceHorizontal(
 		s.width,
 		lipgloss.Center,
@@ -120,6 +143,7 @@ func (s typingScreen) View() tea.View {
 		textView,
 	),
 		lipgloss.NewLayer(bannerView).Y(bannerOffset),
+		lipgloss.NewLayer(helpView).Y(s.height-lipgloss.Height(helpView)).X(helpOffset),
 	)
 
 	c := lipgloss.NewCompositor(textLayer)
