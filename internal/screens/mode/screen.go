@@ -6,6 +6,7 @@ import (
 	"github.com/mati-33/gopher-type/internal/config"
 	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/screens"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type modeScreen struct {
@@ -18,10 +19,10 @@ type modeScreen struct {
 	keybinds keybinds
 }
 
-func NewModeScreen(config config.Config, width, height int) modeScreen {
-	choices := NewChoices(modes.GetModeNames())
+func NewModeScreen(config config.Config, theme themes.Theme, width, height int) modeScreen {
+	choices := NewChoices(theme, modes.GetModeNames())
 	mode := modes.MustGetMode(choices.Selected())
-	preview := NewPreview(int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
+	preview := NewPreview(theme, int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
 	keybinds := newKeybinds()
 
 	return modeScreen{
@@ -31,7 +32,7 @@ func NewModeScreen(config config.Config, width, height int) modeScreen {
 		preview:  preview,
 		choices:  choices,
 		keybinds: keybinds,
-		help: screens.NewHelp([]screens.Keybind{
+		help: screens.NewHelp(theme, []screens.Keybind{
 			keybinds.Next,
 			keybinds.Previous,
 			keybinds.Refresh,

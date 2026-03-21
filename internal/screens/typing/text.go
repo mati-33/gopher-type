@@ -9,6 +9,7 @@ import (
 	"charm.land/bubbles/v2/stopwatch"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type TextStyles struct {
@@ -19,16 +20,12 @@ type TextStyles struct {
 	Lines  lipgloss.Style
 }
 
-func NewTextStyles() TextStyles {
-	grey := lipgloss.Color("#bbbbbb")
-	white := lipgloss.Color("#ffffff")
-	red := lipgloss.Color("#ff005f")
-
+func NewTextStyles(theme themes.Theme) TextStyles {
 	return TextStyles{
-		Before: lipgloss.NewStyle().Foreground(grey),
-		After:  lipgloss.NewStyle().Foreground(white),
-		Cursor: lipgloss.NewStyle().Underline(true).Foreground(grey),
-		Error:  lipgloss.NewStyle().Foreground(red),
+		Before: lipgloss.NewStyle().Foreground(theme.TextMuted),
+		After:  lipgloss.NewStyle().Foreground(theme.Text),
+		Cursor: lipgloss.NewStyle().Underline(true).Foreground(theme.TextMuted),
+		Error:  lipgloss.NewStyle().Foreground(theme.Error),
 		Lines:  lipgloss.NewStyle().MarginTop(1).Align(lipgloss.Left),
 	}
 }
@@ -44,12 +41,12 @@ type Text struct {
 	stopwatch stopwatch.Model
 }
 
-func NewText(text []rune, width, height int) Text {
+func NewText(theme themes.Theme, text []rune, width, height int) Text {
 	return Text{
 		Width:     width,
 		Height:    height,
 		Started:   false,
-		Styles:    NewTextStyles(),
+		Styles:    NewTextStyles(theme),
 		cursor:    0,
 		Text:      text,
 		errors:    []int{},

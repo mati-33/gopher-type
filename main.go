@@ -8,6 +8,7 @@ import (
 	"github.com/mati-33/gopher-type/internal/config"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/welcome"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 func main() {
@@ -31,12 +32,14 @@ type model struct {
 	width       int
 	height      int
 	config      config.Config
+	theme       themes.Theme
 }
 
 func newModel() model {
 	return model{
 		screenStack: []tea.Model{},
 		config:      config.NewDefault(),
+		theme:       themes.NewDefault(),
 	}
 }
 
@@ -54,7 +57,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if len(m.screenStack) == 0 {
 			return m, func() tea.Msg {
 				return screens.PushScreen{
-					Screen: welcome.NewWelcomeScreen(m.config, m.width, m.height),
+					Screen: welcome.NewWelcomeScreen(m.config, m.theme, m.width, m.height),
 				}
 			}
 		}
@@ -89,6 +92,9 @@ func (m model) View() tea.View {
 	if len(m.screenStack) > 0 {
 		view := m.screenStack[len(m.screenStack)-1].View()
 		view.AltScreen = true
+		if !m.config.Transparent {
+			view.BackgroundColor = m.theme.Background
+		}
 		return view
 	}
 

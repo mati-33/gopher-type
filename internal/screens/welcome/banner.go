@@ -4,12 +4,21 @@ import (
 	"strings"
 
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type BannerStyles struct {
 	Ascii   lipgloss.Style
 	Descr   lipgloss.Style
 	Version lipgloss.Style
+}
+
+func newBannerStyles(theme themes.Theme) BannerStyles {
+	return BannerStyles{
+		Ascii:   lipgloss.NewStyle().Padding(1, 4).Foreground(theme.Text),
+		Descr:   lipgloss.NewStyle().Italic(true).Foreground(theme.TextMuted),
+		Version: lipgloss.NewStyle().MarginBottom(2).Foreground(theme.TextMuted),
+	}
 }
 
 type Banner struct {
@@ -19,18 +28,14 @@ type Banner struct {
 	version         string
 }
 
-func NewBanner(version string) Banner {
+func NewBanner(theme themes.Theme, version string) Banner {
 	ascii := `
 ▄▀▀ █▀▄ █▀▄ █▄█ █▀▀ █▀▄   ▀█▀ ▀▄▀ █▀▄ █▀▀
 █▄█ █▄█ █▀▀ █ █ ██▄ █▀▄    █   █  █▀▀ ██▄`
 	ascii = strings.TrimSpace(ascii)
 
 	return Banner{
-		Styles: BannerStyles{
-			Ascii:   lipgloss.NewStyle().Padding(1, 4).Background(lipgloss.Color("#303030")),
-			Descr:   lipgloss.NewStyle().Italic(true).Foreground(lipgloss.Color("#aaaaaa")),
-			Version: lipgloss.NewStyle().MarginBottom(2).Foreground(lipgloss.Color("#aaaaaa")),
-		},
+		Styles:          newBannerStyles(theme),
 		GopherTypeAscii: ascii,
 		descr:           "typing practise app for the terminal",
 		version:         version,

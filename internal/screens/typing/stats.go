@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type StatsStyles struct {
@@ -15,17 +16,12 @@ type StatsStyles struct {
 	NegativeDiff lipgloss.Style
 }
 
-func NewStatsStyles() StatsStyles {
-	yellow := lipgloss.Color("#ffff30")
-	blue := lipgloss.Color("#0087ff")
-	grey := lipgloss.Color("#bbbbbb")
-	white := lipgloss.Color("#ffffff")
-
+func NewStatsStyles(theme themes.Theme) StatsStyles {
 	return StatsStyles{
-		SpeedIcon:    lipgloss.NewStyle().Foreground(yellow).SetString("󱐋"),
-		AccuracyIcon: lipgloss.NewStyle().Foreground(blue).SetString("󰣉"),
-		Text:         lipgloss.NewStyle().Foreground(grey),
-		Value:        lipgloss.NewStyle().Foreground(white),
+		SpeedIcon:    lipgloss.NewStyle().Foreground(theme.Primary).SetString("󱐋"),
+		AccuracyIcon: lipgloss.NewStyle().Foreground(theme.Primary).SetString("󰣉"),
+		Text:         lipgloss.NewStyle().Foreground(theme.Text),
+		Value:        lipgloss.NewStyle().Foreground(theme.Text),
 	}
 }
 
@@ -35,9 +31,9 @@ type Stats struct {
 	Styles   StatsStyles
 }
 
-func NewStats() Stats {
+func NewStats(theme themes.Theme) Stats {
 	return Stats{
-		Styles: NewStatsStyles(),
+		Styles: NewStatsStyles(theme),
 	}
 }
 

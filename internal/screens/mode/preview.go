@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type PreviewStyles struct {
@@ -12,21 +13,25 @@ type PreviewStyles struct {
 	TitleIcon lipgloss.Style
 }
 
+func newPreviewStyles(theme themes.Theme) PreviewStyles {
+	return PreviewStyles{
+		Title:     lipgloss.NewStyle().Foreground(theme.Text).MarginBottom(1),
+		Text:      lipgloss.NewStyle().Align(lipgloss.Left).Foreground(theme.TextMuted).MarginLeft(2),
+		TitleIcon: lipgloss.NewStyle().SetString("󱎸").PaddingRight(1).Foreground(theme.Primary),
+	}
+}
+
 type Preview struct {
 	Styles PreviewStyles
 	Text   string
 	Width  int
 }
 
-func NewPreview(width int, text string) Preview {
+func NewPreview(theme themes.Theme, width int, text string) Preview {
 	return Preview{
-		Styles: PreviewStyles{
-			Title:     lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff")).MarginBottom(1),
-			Text:      lipgloss.NewStyle().Align(lipgloss.Left).Foreground(lipgloss.Color("#aaaaaa")).MarginLeft(2),
-			TitleIcon: lipgloss.NewStyle().SetString("󱎸").PaddingRight(1).Foreground(lipgloss.Color("#5f00ff")),
-		},
-		Width: width,
-		Text:  text,
+		Styles: newPreviewStyles(theme),
+		Width:  width,
+		Text:   text,
 	}
 }
 

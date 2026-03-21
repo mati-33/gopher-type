@@ -7,10 +7,12 @@ import (
 	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/mode"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type typingScreen struct {
 	config       config.Config
+	theme        themes.Theme
 	mode         modes.Mode
 	providerName string
 	width        int
@@ -23,7 +25,7 @@ type typingScreen struct {
 	keybinds     keybinds
 }
 
-func NewTypingScreen(config config.Config, width, height int) typingScreen {
+func NewTypingScreen(config config.Config, theme themes.Theme, width, height int) typingScreen {
 	mode := modes.MustGetMode(config.InitMode)
 	wc := config.InitWordCount
 	keybinds := newKeybinds()
@@ -33,12 +35,13 @@ func NewTypingScreen(config config.Config, width, height int) typingScreen {
 		width:     width,
 		height:    height,
 		wordCount: config.InitWordCount,
-		stats:     NewStats(),
-		text:      NewText(mode.Generate(wc), int(float32(width)*0.7), height),
-		info:      NewInfo(wc, mode.Name()),
+		stats:     NewStats(theme),
+		text:      NewText(theme, mode.Generate(wc), int(float32(width)*0.7), height),
+		info:      NewInfo(theme, wc, mode.Name()),
 		config:    config,
+		theme:     theme,
 		keybinds:  keybinds,
-		help: screens.NewHelp([]screens.Keybind{
+		help: screens.NewHelp(theme, []screens.Keybind{
 			keybinds.IncWordCount,
 			keybinds.DecWordCount,
 			keybinds.ChangeMode,
@@ -102,7 +105,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case s.keybinds.ChangeMode.Key:
 			return s, func() tea.Msg {
 				return screens.PushScreen{
-					Screen: mode.NewModeScreen(s.config, s.width, s.height),
+					Screen: mode.NewModeScreen(s.config, s.theme, s.width, s.height),
 				}
 			}
 

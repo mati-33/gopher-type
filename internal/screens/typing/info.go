@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type InfoStyles struct {
@@ -13,17 +14,12 @@ type InfoStyles struct {
 	ModeIcon      lipgloss.Style
 }
 
-func NewInfoStyle() InfoStyles {
-	grey := lipgloss.Color("#bbbbbb")
-	white := lipgloss.Color("#ffffff")
-	violet := lipgloss.Color("#5f00ff")
-	pink := lipgloss.Color("#d7005f")
-
+func NewInfoStyle(theme themes.Theme) InfoStyles {
 	return InfoStyles{
-		Text:          lipgloss.NewStyle().Foreground(grey),
-		Value:         lipgloss.NewStyle().Foreground(white),
-		WordCountIcon: lipgloss.NewStyle().SetString("").Foreground(violet),
-		ModeIcon:      lipgloss.NewStyle().SetString("󰦨").Foreground(pink),
+		Text:          lipgloss.NewStyle().Foreground(theme.Text),
+		Value:         lipgloss.NewStyle().Foreground(theme.Text),
+		WordCountIcon: lipgloss.NewStyle().SetString("").Foreground(theme.Primary),
+		ModeIcon:      lipgloss.NewStyle().SetString("󰦨").Foreground(theme.Primary),
 	}
 }
 
@@ -33,11 +29,11 @@ type Info struct {
 	Styles    InfoStyles
 }
 
-func NewInfo(wordCount int, mode string) Info {
+func NewInfo(theme themes.Theme, wordCount int, mode string) Info {
 	return Info{
 		WordCount: wordCount,
 		Mode:      mode,
-		Styles:    NewInfoStyle(),
+		Styles:    NewInfoStyle(theme),
 	}
 }
 
@@ -48,7 +44,7 @@ func (i Info) View() string {
 	)
 	mode := lipgloss.JoinVertical(lipgloss.Left,
 		fmt.Sprintf("%s %s", i.Styles.ModeIcon.Render(), i.Styles.Text.Render("mode")),
-		fmt.Sprintf("  %s", i.Mode),
+		fmt.Sprintf("  %s", i.Styles.Value.Render(i.Mode)),
 	)
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, mode, "   ", count)

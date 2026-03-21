@@ -6,6 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type ChoicesStyles struct {
@@ -16,21 +17,26 @@ type ChoicesStyles struct {
 	TitleIcon lipgloss.Style
 }
 
+func newChoicesStyles(theme themes.Theme) ChoicesStyles {
+	return ChoicesStyles{
+		Normal:    lipgloss.NewStyle().Foreground(theme.TextMuted),
+		Selected:  lipgloss.NewStyle().Foreground(theme.Text),
+		Cursor:    lipgloss.NewStyle().SetString(">").PaddingRight(1).Foreground(theme.Secondary).Bold(true),
+		Title:     lipgloss.NewStyle().Foreground(theme.Text).MarginBottom(1),
+		TitleIcon: lipgloss.NewStyle().SetString("󰦨").PaddingRight(1).Foreground(theme.Primary),
+	}
+
+}
+
 type Choices struct {
 	Styles  ChoicesStyles
 	choices []string
 	cursor  int
 }
 
-func NewChoices(choices []string) Choices {
+func NewChoices(theme themes.Theme, choices []string) Choices {
 	return Choices{
-		Styles: ChoicesStyles{
-			Normal:    lipgloss.NewStyle().Foreground(lipgloss.Color("#aaaaaa")),
-			Selected:  lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff")),
-			Cursor:    lipgloss.NewStyle().SetString(">").PaddingRight(1).Foreground(lipgloss.Color("#0087ff")),
-			Title:     lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff")).MarginBottom(1),
-			TitleIcon: lipgloss.NewStyle().SetString("󰦨").PaddingRight(1).Foreground(lipgloss.Color("#d7005f")),
-		},
+		Styles:  newChoicesStyles(theme),
 		choices: choices,
 	}
 }

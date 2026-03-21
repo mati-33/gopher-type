@@ -6,11 +6,19 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/screens"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type MenuStyles struct {
 	Key         lipgloss.Style
 	Description lipgloss.Style
+}
+
+func newMenuStyles(theme themes.Theme) MenuStyles {
+	return MenuStyles{
+		Key:         lipgloss.NewStyle().Foreground(theme.Primary).Bold(true),
+		Description: lipgloss.NewStyle().Foreground(theme.Text),
+	}
 }
 
 type Menu struct {
@@ -19,12 +27,9 @@ type Menu struct {
 	Width   int
 }
 
-func NewMenu(options []screens.Keybind, width int) Menu {
+func NewMenu(theme themes.Theme, options []screens.Keybind, width int) Menu {
 	return Menu{
-		Styles: MenuStyles{
-			Key:         lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff")),
-			Description: lipgloss.NewStyle().Foreground(lipgloss.Color("#aaaaaa")),
-		},
+		Styles:  newMenuStyles(theme),
 		Options: options,
 		Width:   width,
 	}

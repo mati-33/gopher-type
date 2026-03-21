@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type Keybind struct {
@@ -16,18 +17,22 @@ type HelpStyles struct {
 	Desc lipgloss.Style
 }
 
+func newHelpStyles(theme themes.Theme) HelpStyles {
+	return HelpStyles{
+		Key:  lipgloss.NewStyle().Foreground(theme.Secondary).Bold(true),
+		Desc: lipgloss.NewStyle().Foreground(theme.Text),
+	}
+}
+
 type Help struct {
 	Styles   HelpStyles
 	Expanded bool
 	Keybinds []Keybind
 }
 
-func NewHelp(keybinds []Keybind) Help {
+func NewHelp(theme themes.Theme, keybinds []Keybind) Help {
 	return Help{
-		Styles: HelpStyles{
-			Key:  lipgloss.NewStyle().Foreground(lipgloss.Color("#ffffff")),
-			Desc: lipgloss.NewStyle().Foreground(lipgloss.Color("#aaaaaa")),
-		},
+		Styles:   newHelpStyles(theme),
 		Keybinds: keybinds,
 	}
 }

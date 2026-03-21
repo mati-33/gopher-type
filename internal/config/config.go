@@ -4,6 +4,7 @@ type Config struct {
 	InitMode      string
 	InitWordCount int
 	PreviewSize   int
+	Transparent   bool
 }
 
 func NewDefault() Config {
@@ -11,5 +12,6 @@ func NewDefault() Config {
 		InitMode:      "english",
 		InitWordCount: 15,
 		PreviewSize:   15,
+		Transparent:   false,
 	}
 }

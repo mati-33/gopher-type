@@ -7,6 +7,7 @@ import (
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/screens/mode"
 	"github.com/mati-33/gopher-type/internal/screens/typing"
+	"github.com/mati-33/gopher-type/internal/themes"
 	"github.com/mati-33/gopher-type/internal/version"
 )
 
@@ -18,12 +19,13 @@ type welcomeScreen struct {
 	menu     Menu
 	modeName string
 	keybinds keybinds
+	theme    themes.Theme
 }
 
-func NewWelcomeScreen(config config.Config, width, height int) welcomeScreen {
+func NewWelcomeScreen(config config.Config, theme themes.Theme, width, height int) welcomeScreen {
 	keybinds := newKeybind()
-	banner := NewBanner(version.Version)
-	menu := NewMenu([]screens.Keybind{
+	banner := NewBanner(theme, version.Version)
+	menu := NewMenu(theme, []screens.Keybind{
 		keybinds.Practise,
 		keybinds.Mode,
 		keybinds.Theme,
@@ -38,6 +40,7 @@ func NewWelcomeScreen(config config.Config, width, height int) welcomeScreen {
 		config:   config,
 		modeName: config.InitMode,
 		keybinds: keybinds,
+		theme:    theme,
 	}
 }
 
@@ -65,7 +68,7 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case s.keybinds.Mode.Key:
 			return s, func() tea.Msg {
 				return screens.PushScreen{
-					Screen: mode.NewModeScreen(s.config, s.width, s.height),
+					Screen: mode.NewModeScreen(s.config, s.theme, s.width, s.height),
 				}
 			}
 
@@ -74,6 +77,7 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return screens.PushScreen{
 					Screen: typing.NewTypingScreen(
 						s.config,
+						s.theme,
 						s.width,
 						s.height,
 					),
