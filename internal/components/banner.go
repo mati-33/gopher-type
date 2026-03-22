@@ -1,4 +1,4 @@
-package welcome
+package components
 
 import (
 	"strings"

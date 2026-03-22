@@ -1,4 +1,4 @@
-package typing
+package components
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
-type StatsStyles struct {
+type TypingStatsStyles struct {
 	SpeedIcon    lipgloss.Style
 	AccuracyIcon lipgloss.Style
 	Text         lipgloss.Style
@@ -16,8 +16,8 @@ type StatsStyles struct {
 	NegativeDiff lipgloss.Style
 }
 
-func NewStatsStyles(theme themes.Theme) StatsStyles {
-	return StatsStyles{
+func NewTypingStatsStyles(theme themes.Theme) TypingStatsStyles {
+	return TypingStatsStyles{
 		SpeedIcon:    lipgloss.NewStyle().Foreground(theme.Primary).SetString("󱐋"),
 		AccuracyIcon: lipgloss.NewStyle().Foreground(theme.Primary).SetString("󰣉"),
 		Text:         lipgloss.NewStyle().Foreground(theme.Text),
@@ -25,19 +25,19 @@ func NewStatsStyles(theme themes.Theme) StatsStyles {
 	}
 }
 
-type Stats struct {
+type TypingStats struct {
 	Wpm      int
 	Accuracy float64
-	Styles   StatsStyles
+	Styles   TypingStatsStyles
 }
 
-func NewStats(theme themes.Theme) Stats {
-	return Stats{
-		Styles: NewStatsStyles(theme),
+func NewTypingStats(theme themes.Theme) TypingStats {
+	return TypingStats{
+		Styles: NewTypingStatsStyles(theme),
 	}
 }
 
-func (s Stats) View() string {
+func (s TypingStats) View() string {
 	speedLabel := fmt.Sprintf("%s %s", s.Styles.SpeedIcon.Render(), s.Styles.Text.Render("speed"))
 	accuracyLabel := fmt.Sprintf("%s %s", s.Styles.AccuracyIcon.Render(), s.Styles.Text.Render("accuracy"))
 

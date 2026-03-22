@@ -1,12 +1,11 @@
-package welcome
+package screens
 
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+
+	comp "github.com/mati-33/gopher-type/internal/components"
 	"github.com/mati-33/gopher-type/internal/config"
-	"github.com/mati-33/gopher-type/internal/screens"
-	"github.com/mati-33/gopher-type/internal/screens/mode"
-	"github.com/mati-33/gopher-type/internal/screens/typing"
 	"github.com/mati-33/gopher-type/internal/themes"
 	"github.com/mati-33/gopher-type/internal/version"
 )
@@ -15,18 +14,18 @@ type welcomeScreen struct {
 	config   config.Config
 	width    int
 	height   int
-	banner   Banner
-	menu     Menu
+	banner   comp.Banner
+	menu     comp.Menu
 	modeName string
-	keybinds keybinds
+	keybinds welcomeKeybinds
 	theme    themes.Theme
-	info     info
+	info     comp.MenuInfo
 }
 
 func NewWelcomeScreen(config config.Config, theme themes.Theme, width, height int) welcomeScreen {
-	keybinds := newKeybind()
-	banner := NewBanner(theme, version.Version)
-	menu := NewMenu(theme, []screens.Keybind{
+	keybinds := newWelcomeKeybind()
+	banner := comp.NewBanner(theme, version.Version)
+	menu := comp.NewMenu(theme, []comp.Keybind{
 		keybinds.Practise,
 		keybinds.Mode,
 		keybinds.Theme,
@@ -42,7 +41,7 @@ func NewWelcomeScreen(config config.Config, theme themes.Theme, width, height in
 		modeName: config.InitMode,
 		keybinds: keybinds,
 		theme:    theme,
-		info:     newInfo(theme, config.InitMode, config.InitTheme, lipgloss.Width(banner.GopherTypeAscii)),
+		info:     comp.NewMenuInfo(theme, config.InitMode, config.InitTheme, lipgloss.Width(banner.GopherTypeAscii)),
 	}
 }
 
@@ -58,7 +57,7 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.height = msg.Height
 		return s, nil
 
-	case screens.ChangeProvider:
+	case ChangeProvider:
 		s.modeName = msg.Name
 
 	case tea.KeyMsg:
@@ -69,15 +68,15 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case s.keybinds.Mode.Key:
 			return s, func() tea.Msg {
-				return screens.PushScreen{
-					Screen: mode.NewModeScreen(s.config, s.theme, s.width, s.height),
+				return PushScreen{
+					Screen: NewModeScreen(s.config, s.theme, s.width, s.height),
 				}
 			}
 
 		case s.keybinds.Practise.Key:
 			return s, func() tea.Msg {
-				return screens.PushScreen{
-					Screen: typing.NewTypingScreen(
+				return PushScreen{
+					Screen: NewTypingScreen(
 						s.config,
 						s.theme,
 						s.width,
@@ -102,4 +101,20 @@ func (s welcomeScreen) View() tea.View {
 		lipgloss.Center, 0.7,
 		screen,
 	))
+}
+
+type welcomeKeybinds struct {
+	Practise comp.Keybind
+	Mode     comp.Keybind
+	Theme    comp.Keybind
+	Quit     comp.Keybind
+}
+
+func newWelcomeKeybind() welcomeKeybinds {
+	return welcomeKeybinds{
+		Practise: comp.Keybind{Key: "enter", Desc: "practise"},
+		Mode:     comp.Keybind{Key: "m", Desc: "select mode"},
+		Theme:    comp.Keybind{Key: "t", Desc: "change theme"},
+		Quit:     comp.Keybind{Key: "q", Desc: "quit"},
+	}
 }

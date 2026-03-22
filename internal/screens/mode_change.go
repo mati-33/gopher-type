@@ -1,11 +1,11 @@
-package mode
+package screens
 
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	comp "github.com/mati-33/gopher-type/internal/components"
 	"github.com/mati-33/gopher-type/internal/config"
 	"github.com/mati-33/gopher-type/internal/modes"
-	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
@@ -13,17 +13,17 @@ type modeScreen struct {
 	config   config.Config
 	width    int
 	height   int
-	preview  Preview
-	choices  Choices
-	help     screens.Help
-	keybinds keybinds
+	preview  comp.Preview
+	choices  comp.Choices
+	help     comp.Help
+	keybinds modeChangeKeybinds
 }
 
 func NewModeScreen(config config.Config, theme themes.Theme, width, height int) modeScreen {
-	choices := NewChoices(theme, modes.GetModeNames())
+	choices := comp.NewChoices(theme, modes.GetModeNames())
 	mode := modes.MustGetMode(choices.Selected())
-	preview := NewPreview(theme, int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
-	keybinds := newKeybinds()
+	preview := comp.NewPreview(theme, int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
+	keybinds := newModeChangeKeybinds()
 
 	return modeScreen{
 		config:   config,
@@ -32,7 +32,7 @@ func NewModeScreen(config config.Config, theme themes.Theme, width, height int) 
 		preview:  preview,
 		choices:  choices,
 		keybinds: keybinds,
-		help: screens.NewHelp(theme, []screens.Keybind{
+		help: comp.NewHelp(theme, []comp.Keybind{
 			keybinds.Next,
 			keybinds.Previous,
 			keybinds.Refresh,
@@ -49,7 +49,7 @@ func (m modeScreen) Init() tea.Cmd {
 
 func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case ChoiceChanged:
+	case comp.ChoiceChanged:
 		mode := modes.MustGetMode(msg.Name)
 		m.preview.Text = string(mode.Generate(m.config.PreviewSize))
 
@@ -69,18 +69,16 @@ func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case m.keybinds.Choose.Key:
 			name := m.choices.Selected()
 			return m, func() tea.Msg {
-				return screens.PopScreen{
+				return PopScreen{
 					Command: func() tea.Msg {
-						return screens.ChangeProvider{
-							Name: name,
-						}
+						return ChangeProvider{Name: name}
 					},
 				}
 			}
 
 		case m.keybinds.Cancel.Key:
 			return m, func() tea.Msg {
-				return screens.PopScreen{}
+				return PopScreen{}
 			}
 
 		case m.keybinds.Help.Key:
@@ -111,4 +109,24 @@ func (m modeScreen) View() tea.View {
 
 	c := lipgloss.NewCompositor(layer)
 	return tea.NewView(c.Render())
+}
+
+type modeChangeKeybinds struct {
+	Next     comp.Keybind
+	Previous comp.Keybind
+	Refresh  comp.Keybind
+	Choose   comp.Keybind
+	Cancel   comp.Keybind
+	Help     comp.Keybind
+}
+
+func newModeChangeKeybinds() modeChangeKeybinds {
+	return modeChangeKeybinds{
+		Next:     comp.Keybind{Key: "j", Desc: "next"},
+		Previous: comp.Keybind{Key: "k", Desc: "previous"},
+		Refresh:  comp.Keybind{Key: "r", Desc: "refresh"},
+		Choose:   comp.Keybind{Key: "enter", Desc: "choose"},
+		Cancel:   comp.Keybind{Key: "esc", Desc: "cancel"},
+		Help:     comp.Keybind{Key: "f1", Desc: "close help"},
+	}
 }

@@ -1,11 +1,10 @@
-package welcome
+package components
 
 import (
 	"fmt"
 	"strings"
 
 	"charm.land/lipgloss/v2"
-	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
@@ -23,11 +22,11 @@ func newMenuStyles(theme themes.Theme) MenuStyles {
 
 type Menu struct {
 	Styles  MenuStyles
-	Options []screens.Keybind
+	Options []Keybind
 	Width   int
 }
 
-func NewMenu(theme themes.Theme, options []screens.Keybind, width int) Menu {
+func NewMenu(theme themes.Theme, options []Keybind, width int) Menu {
 	return Menu{
 		Styles:  newMenuStyles(theme),
 		Options: options,

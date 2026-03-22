@@ -1,4 +1,4 @@
-package welcome
+package components
 
 import (
 	"fmt"
@@ -8,27 +8,27 @@ import (
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
-type infoStyles struct {
+type MenuInfoStyles struct {
 	text  lipgloss.Style
 	value lipgloss.Style
 }
 
-func newInfoStyles(theme themes.Theme) infoStyles {
-	return infoStyles{
+func newInfoStyles(theme themes.Theme) MenuInfoStyles {
+	return MenuInfoStyles{
 		text:  lipgloss.NewStyle().Foreground(theme.Secondary),
 		value: lipgloss.NewStyle().Foreground(theme.TextMuted),
 	}
 }
 
-type info struct {
-	styles    infoStyles
+type MenuInfo struct {
+	styles    MenuInfoStyles
 	modeName  string
 	themeName string
 	width     int
 }
 
-func newInfo(theme themes.Theme, modeName, themeName string, width int) info {
-	return info{
+func NewMenuInfo(theme themes.Theme, modeName, themeName string, width int) MenuInfo {
+	return MenuInfo{
 		styles:    newInfoStyles(theme),
 		modeName:  modeName,
 		themeName: themeName,
@@ -36,7 +36,7 @@ func newInfo(theme themes.Theme, modeName, themeName string, width int) info {
 	}
 }
 
-func (i info) View() string {
+func (i MenuInfo) View() string {
 	ml := i.styles.text.Render("mode")
 	mv := i.styles.value.Render(i.modeName)
 	m := fmt.Sprintf("%s%s%s", ml, strings.Repeat(" ", i.width-lipgloss.Width(ml)-lipgloss.Width(mv)), mv)
@@ -45,5 +45,4 @@ func (i info) View() string {
 	t := fmt.Sprintf("%s%s%s", tl, strings.Repeat(" ", i.width-lipgloss.Width(tl)-lipgloss.Width(tv)), tv)
 
 	return lipgloss.JoinVertical(lipgloss.Left, m, t)
-
 }

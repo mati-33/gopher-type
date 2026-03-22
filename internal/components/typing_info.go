@@ -1,4 +1,4 @@
-package typing
+package components
 
 import (
 	"fmt"
@@ -7,15 +7,15 @@ import (
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
-type InfoStyles struct {
+type TypingInfoStyles struct {
 	Text          lipgloss.Style
 	Value         lipgloss.Style
 	WordCountIcon lipgloss.Style
 	ModeIcon      lipgloss.Style
 }
 
-func NewInfoStyle(theme themes.Theme) InfoStyles {
-	return InfoStyles{
+func NewTypingInfoStyle(theme themes.Theme) TypingInfoStyles {
+	return TypingInfoStyles{
 		Text:          lipgloss.NewStyle().Foreground(theme.Text),
 		Value:         lipgloss.NewStyle().Foreground(theme.Text),
 		WordCountIcon: lipgloss.NewStyle().SetString("").Foreground(theme.Primary),
@@ -23,21 +23,21 @@ func NewInfoStyle(theme themes.Theme) InfoStyles {
 	}
 }
 
-type Info struct {
+type TypingInfo struct {
 	WordCount int
 	Mode      string
-	Styles    InfoStyles
+	Styles    TypingInfoStyles
 }
 
-func NewInfo(theme themes.Theme, wordCount int, mode string) Info {
-	return Info{
+func NewTypingInfo(theme themes.Theme, wordCount int, mode string) TypingInfo {
+	return TypingInfo{
 		WordCount: wordCount,
 		Mode:      mode,
-		Styles:    NewInfoStyle(theme),
+		Styles:    NewTypingInfoStyle(theme),
 	}
 }
 
-func (i Info) View() string {
+func (i TypingInfo) View() string {
 	count := lipgloss.JoinVertical(lipgloss.Left,
 		fmt.Sprintf("%s %s", i.Styles.WordCountIcon.Render(), i.Styles.Text.Render("word count")),
 		fmt.Sprintf("  %s", i.Styles.Value.Render(fmt.Sprintf("%d", i.WordCount))),

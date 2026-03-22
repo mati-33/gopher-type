@@ -7,7 +7,6 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/mati-33/gopher-type/internal/config"
 	"github.com/mati-33/gopher-type/internal/screens"
-	"github.com/mati-33/gopher-type/internal/screens/welcome"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
@@ -58,7 +57,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if len(m.screenStack) == 0 {
 			return m, func() tea.Msg {
 				return screens.PushScreen{
-					Screen: welcome.NewWelcomeScreen(m.config, m.theme, m.width, m.height),
+					Screen: screens.NewWelcomeScreen(m.config, m.theme, m.width, m.height),
 				}
 			}
 		}

@@ -1,12 +1,11 @@
-package typing
+package screens
 
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	comp "github.com/mati-33/gopher-type/internal/components"
 	"github.com/mati-33/gopher-type/internal/config"
 	"github.com/mati-33/gopher-type/internal/modes"
-	"github.com/mati-33/gopher-type/internal/screens"
-	"github.com/mati-33/gopher-type/internal/screens/mode"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
@@ -18,30 +17,30 @@ type typingScreen struct {
 	width        int
 	height       int
 	wordCount    int
-	stats        Stats
-	text         Text
-	info         Info
-	help         screens.Help
-	keybinds     keybinds
+	stats        comp.TypingStats
+	text         comp.Text
+	info         comp.TypingInfo
+	help         comp.Help
+	keybinds     typingKeybinds
 }
 
 func NewTypingScreen(config config.Config, theme themes.Theme, width, height int) typingScreen {
 	mode := modes.MustGetMode(config.InitMode)
 	wc := config.InitWordCount
-	keybinds := newKeybinds()
+	keybinds := newTypingKeybinds()
 
 	return typingScreen{
 		mode:      mode,
 		width:     width,
 		height:    height,
 		wordCount: config.InitWordCount,
-		stats:     NewStats(theme),
-		text:      NewText(theme, mode.Generate(wc), int(float32(width)*0.7), height),
-		info:      NewInfo(theme, wc, mode.Name()),
+		stats:     comp.NewTypingStats(theme),
+		text:      comp.NewText(theme, mode.Generate(wc), int(float32(width)*0.7), height),
+		info:      comp.NewTypingInfo(theme, wc, mode.Name()),
 		config:    config,
 		theme:     theme,
 		keybinds:  keybinds,
-		help: screens.NewHelp(theme, []screens.Keybind{
+		help: comp.NewHelp(theme, []comp.Keybind{
 			keybinds.IncWordCount,
 			keybinds.DecWordCount,
 			keybinds.ChangeMode,
@@ -64,12 +63,12 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.height = msg.Height
 		s.text.Width = int(float32(s.width) * 0.7)
 
-	case TextResult:
+	case comp.TextResult:
 		s.stats.Wpm = msg.Wpm
 		s.stats.Accuracy = msg.Accuracy
 		s.text.Text = s.mode.Generate(s.wordCount)
 
-	case screens.ChangeProvider:
+	case ChangeProvider:
 		s.mode = modes.MustGetMode(msg.Name)
 		s.info.Mode = s.mode.Name()
 		s.text.Text = s.mode.Generate(s.wordCount)
@@ -83,7 +82,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s.text.Text = s.mode.Generate(s.wordCount)
 				return s, tea.Batch(s.text.Reset()...)
 			} else {
-				return s, func() tea.Msg { return screens.PopScreen{} }
+				return s, func() tea.Msg { return PopScreen{} }
 			}
 
 		case s.keybinds.IncWordCount.Key:
@@ -104,8 +103,8 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case s.keybinds.ChangeMode.Key:
 			return s, func() tea.Msg {
-				return screens.PushScreen{
-					Screen: mode.NewModeScreen(s.config, s.theme, s.width, s.height),
+				return PushScreen{
+					Screen: NewModeScreen(s.config, s.theme, s.width, s.height),
 				}
 			}
 
@@ -151,4 +150,22 @@ func (s typingScreen) View() tea.View {
 
 	c := lipgloss.NewCompositor(textLayer)
 	return tea.NewView(c.Render())
+}
+
+type typingKeybinds struct {
+	IncWordCount comp.Keybind
+	DecWordCount comp.Keybind
+	ChangeMode   comp.Keybind
+	GoBack       comp.Keybind
+	Help         comp.Keybind
+}
+
+func newTypingKeybinds() typingKeybinds {
+	return typingKeybinds{
+		IncWordCount: comp.Keybind{Key: "ctrl+o", Desc: "increase word count"},
+		DecWordCount: comp.Keybind{Key: "ctrl+p", Desc: "decrease word count"},
+		ChangeMode:   comp.Keybind{Key: "ctrl+n", Desc: "change mode"},
+		GoBack:       comp.Keybind{Key: "esc", Desc: "go back"},
+		Help:         comp.Keybind{Key: "f1", Desc: "close help"},
+	}
 }
