@@ -9,7 +9,7 @@ import (
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
-type ChoicesStyles struct {
+type SelectStyles struct {
 	Normal   lipgloss.Style
 	Selected lipgloss.Style
 	Cursor   lipgloss.Style
@@ -17,8 +17,8 @@ type ChoicesStyles struct {
 	Icon     lipgloss.Style
 }
 
-func newChoicesStyles(theme themes.Theme) ChoicesStyles {
-	return ChoicesStyles{
+func newSelectStyles(theme themes.Theme) SelectStyles {
+	return SelectStyles{
 		Normal:   lipgloss.NewStyle().Foreground(theme.TextMuted),
 		Selected: lipgloss.NewStyle().Foreground(theme.Text),
 		Cursor:   lipgloss.NewStyle().SetString(">").PaddingRight(1).Foreground(theme.Secondary).Bold(true),
@@ -28,64 +28,64 @@ func newChoicesStyles(theme themes.Theme) ChoicesStyles {
 
 }
 
-type Choices struct {
-	Styles  ChoicesStyles
+type Select struct {
+	Styles  SelectStyles
 	choices []string
 	cursor  int
 	label   string
 	icon    string
 }
 
-func NewChoices(theme themes.Theme, choices []string, label, icon string) Choices {
-	return Choices{
-		Styles:  newChoicesStyles(theme),
+func NewSelect(theme themes.Theme, choices []string, label, icon string) Select {
+	return Select{
+		Styles:  newSelectStyles(theme),
 		choices: choices,
 		label:   label,
 		icon:    icon,
 	}
 }
 
-func (c Choices) Update(msg tea.Msg) (Choices, tea.Cmd) {
+func (s Select) Update(msg tea.Msg) (Select, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j":
-			if c.cursor < len(c.choices)-1 {
-				c.cursor++
-				return c, func() tea.Msg { return ChoiceChanged{c.choices[c.cursor]} }
+			if s.cursor < len(s.choices)-1 {
+				s.cursor++
+				return s, func() tea.Msg { return ChoiceChanged{s.choices[s.cursor]} }
 			}
 		case "k":
-			if c.cursor > 0 {
-				c.cursor--
-				return c, func() tea.Msg { return ChoiceChanged{c.choices[c.cursor]} }
+			if s.cursor > 0 {
+				s.cursor--
+				return s, func() tea.Msg { return ChoiceChanged{s.choices[s.cursor]} }
 			}
 		}
 	}
-	return c, nil
+	return s, nil
 }
 
-func (c Choices) View() string {
+func (s Select) View() string {
 	b := strings.Builder{}
-	cursorWidth := lipgloss.Width(c.Styles.Cursor.Render())
+	cursorWidth := lipgloss.Width(s.Styles.Cursor.Render())
 
-	for i, choice := range c.choices {
+	for i, choice := range s.choices {
 		cursor := strings.Repeat(" ", cursorWidth)
-		style := c.Styles.Normal
-		if i == c.cursor {
-			cursor = c.Styles.Cursor.Render()
-			style = c.Styles.Selected
+		style := s.Styles.Normal
+		if i == s.cursor {
+			cursor = s.Styles.Cursor.Render()
+			style = s.Styles.Selected
 		}
 		fmt.Fprintf(&b, "%s%s\n", cursor, style.Render(choice))
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Left,
-		fmt.Sprintf("%s%s", c.Styles.Icon.Render(c.icon), c.Styles.Label.Render(c.label)),
+		fmt.Sprintf("%s%s", s.Styles.Icon.Render(s.icon), s.Styles.Label.Render(s.label)),
 		b.String(),
 	)
 }
 
-func (c Choices) Selected() string {
-	return c.choices[c.cursor]
+func (s Select) Selected() string {
+	return s.choices[s.cursor]
 }
 
 type ChoiceChanged struct {
