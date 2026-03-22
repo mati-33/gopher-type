@@ -10,20 +10,20 @@ import (
 )
 
 type ChoicesStyles struct {
-	Normal    lipgloss.Style
-	Selected  lipgloss.Style
-	Cursor    lipgloss.Style
-	Title     lipgloss.Style
-	TitleIcon lipgloss.Style
+	Normal   lipgloss.Style
+	Selected lipgloss.Style
+	Cursor   lipgloss.Style
+	Label    lipgloss.Style
+	Icon     lipgloss.Style
 }
 
 func newChoicesStyles(theme themes.Theme) ChoicesStyles {
 	return ChoicesStyles{
-		Normal:    lipgloss.NewStyle().Foreground(theme.TextMuted),
-		Selected:  lipgloss.NewStyle().Foreground(theme.Text),
-		Cursor:    lipgloss.NewStyle().SetString(">").PaddingRight(1).Foreground(theme.Secondary).Bold(true),
-		Title:     lipgloss.NewStyle().Foreground(theme.Text).MarginBottom(1),
-		TitleIcon: lipgloss.NewStyle().SetString("󰦨").PaddingRight(1).Foreground(theme.Primary),
+		Normal:   lipgloss.NewStyle().Foreground(theme.TextMuted),
+		Selected: lipgloss.NewStyle().Foreground(theme.Text),
+		Cursor:   lipgloss.NewStyle().SetString(">").PaddingRight(1).Foreground(theme.Secondary).Bold(true),
+		Label:    lipgloss.NewStyle().Foreground(theme.Text).MarginBottom(1),
+		Icon:     lipgloss.NewStyle().PaddingRight(1).Foreground(theme.Primary),
 	}
 
 }
@@ -32,12 +32,16 @@ type Choices struct {
 	Styles  ChoicesStyles
 	choices []string
 	cursor  int
+	label   string
+	icon    string
 }
 
-func NewChoices(theme themes.Theme, choices []string) Choices {
+func NewChoices(theme themes.Theme, choices []string, label, icon string) Choices {
 	return Choices{
 		Styles:  newChoicesStyles(theme),
 		choices: choices,
+		label:   label,
+		icon:    icon,
 	}
 }
 
@@ -75,7 +79,7 @@ func (c Choices) View() string {
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Left,
-		fmt.Sprintf("%s%s", c.Styles.TitleIcon.Render(), c.Styles.Title.Render("modes:")),
+		fmt.Sprintf("%s%s", c.Styles.Icon.Render(c.icon), c.Styles.Label.Render(c.label)),
 		b.String(),
 	)
 }

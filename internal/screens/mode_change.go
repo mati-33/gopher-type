@@ -20,7 +20,7 @@ type modeScreen struct {
 }
 
 func NewModeScreen(config config.Config, theme themes.Theme, width, height int) modeScreen {
-	choices := comp.NewChoices(theme, modes.GetModeNames())
+	choices := comp.NewChoices(theme, modes.GetModeNames(), "modes:", config.ModeIcon)
 	mode := modes.MustGetMode(choices.Selected())
 	preview := comp.NewPreview(theme, int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
 	keybinds := newModeChangeKeybinds()
