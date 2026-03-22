@@ -6,6 +6,12 @@ type Config struct {
 	InitWordCount int
 	PreviewSize   int
 	Transparent   bool
+
+	SpeedIcon     string
+	AccuracyIncon string
+	ModeIcon      string
+	WordCountIcon string
+	PreviewIcon   string
 }
 
 func NewDefault() Config {
@@ -15,5 +21,10 @@ func NewDefault() Config {
 		InitWordCount: 15,
 		PreviewSize:   15,
 		Transparent:   false,
+		SpeedIcon:     "󱐋",
+		AccuracyIncon: "󰣉",
+		ModeIcon:      "󰦨",
+		WordCountIcon: "",
+		PreviewIcon:   "󱎸",
 	}
 }
