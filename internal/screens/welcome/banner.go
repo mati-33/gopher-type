@@ -15,9 +15,12 @@ type BannerStyles struct {
 
 func newBannerStyles(theme themes.Theme) BannerStyles {
 	return BannerStyles{
-		Ascii:   lipgloss.NewStyle().Padding(1, 4).Foreground(theme.Text),
+		Ascii: lipgloss.NewStyle().Foreground(theme.Text).
+			Border(lipgloss.ThickBorder(), false, false, true, false).
+			BorderForeground(theme.Primary),
+
 		Descr:   lipgloss.NewStyle().Italic(true).Foreground(theme.TextMuted),
-		Version: lipgloss.NewStyle().MarginBottom(2).Foreground(theme.TextMuted),
+		Version: lipgloss.NewStyle().Foreground(theme.TextMuted),
 	}
 }
 
@@ -26,6 +29,7 @@ type Banner struct {
 	GopherTypeAscii string
 	descr           string
 	version         string
+	theme           themes.Theme
 }
 
 func NewBanner(theme themes.Theme, version string) Banner {
@@ -39,15 +43,14 @@ func NewBanner(theme themes.Theme, version string) Banner {
 		GopherTypeAscii: ascii,
 		descr:           "typing practise app for the terminal",
 		version:         version,
+		theme:           theme,
 	}
 }
 
 func (b Banner) View() string {
-	width := lipgloss.Width(b.GopherTypeAscii)
-
-	return lipgloss.JoinVertical(lipgloss.Center,
+	return lipgloss.JoinVertical(lipgloss.Left,
 		b.Styles.Ascii.Render(b.GopherTypeAscii),
-		lipgloss.PlaceHorizontal(width, lipgloss.Right, b.Styles.Version.Render(b.version)),
 		b.Styles.Descr.Render(b.descr),
+		b.Styles.Version.Render(b.version),
 	)
 }
