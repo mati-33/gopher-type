@@ -47,7 +47,7 @@ func (df *DetailField) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (df DetailField) View() string {
+func (df *DetailField) View() string {
 	return lipgloss.JoinVertical(lipgloss.Left,
 		fmt.Sprintf("%s %s", df.Styles.Icon.Render(df.Icon), df.Styles.Label.Render(df.Label)),
 		fmt.Sprintf("  %s", df.Styles.Value.Render(df.Value)),

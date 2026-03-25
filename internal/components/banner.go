@@ -57,7 +57,7 @@ func (b *Banner) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (b Banner) View() string {
+func (b *Banner) View() string {
 	return lipgloss.JoinVertical(lipgloss.Left,
 		b.Styles.Ascii.Render(b.GopherTypeAscii),
 		b.Styles.Descr.Render(b.descr),

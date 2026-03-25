@@ -44,7 +44,7 @@ func (m *Menu) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (m Menu) View() string {
+func (m *Menu) View() string {
 	b := strings.Builder{}
 
 	for _, opt := range m.Options {

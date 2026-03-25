@@ -46,7 +46,7 @@ func (m *MenuInfo) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (i MenuInfo) View() string {
+func (i *MenuInfo) View() string {
 	ml := i.styles.text.Render("mode")
 	mv := i.styles.value.Render(i.modeName)
 	m := fmt.Sprintf("%s%s%s", ml, strings.Repeat(" ", i.width-lipgloss.Width(ml)-lipgloss.Width(mv)), mv)

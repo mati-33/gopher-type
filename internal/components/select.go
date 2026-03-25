@@ -70,7 +70,7 @@ func (s *Select) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (s Select) View() string {
+func (s *Select) View() string {
 	b := strings.Builder{}
 	cursorWidth := lipgloss.Width(s.Styles.Cursor.Render())
 
@@ -90,7 +90,7 @@ func (s Select) View() string {
 	)
 }
 
-func (s Select) Selected() string {
+func (s *Select) Selected() string {
 	return s.choices[s.cursor]
 }
 

@@ -47,7 +47,7 @@ func (h *Help) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (h Help) View() string {
+func (h *Help) View() string {
 	if !h.Expanded {
 		return fmt.Sprintf("%s %s", h.Styles.Key.Render("f1"), h.Styles.Desc.Render("help"))
 	}

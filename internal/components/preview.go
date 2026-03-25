@@ -45,7 +45,7 @@ func (p *Preview) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (p Preview) View() string {
+func (p *Preview) View() string {
 	return lipgloss.JoinVertical(lipgloss.Left,
 		fmt.Sprintf("%s%s", p.Styles.TitleIcon.Render(), p.Styles.Title.Render("preview:")),
 		p.Styles.Text.Width(p.Width).Render(p.Text),
