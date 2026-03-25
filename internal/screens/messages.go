@@ -5,7 +5,7 @@ import (
 )
 
 type PushScreen struct {
-	Screen tea.Model
+	Screen Interface
 }
 
 type PopScreen struct {

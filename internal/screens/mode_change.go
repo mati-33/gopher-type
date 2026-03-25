@@ -46,11 +46,7 @@ func NewModeScreen(config config.Config, theme themes.Theme, width, height int) 
 	}
 }
 
-func (m modeScreen) Init() tea.Cmd {
-	return nil
-}
-
-func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *modeScreen) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case comp.ChoiceChanged:
 		mode := modes.MustGetMode(msg.Name)
@@ -74,27 +70,20 @@ func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case m.keybinds.Choose.Key:
 			name := m.choices.Selected()
-			return m, func() tea.Msg {
-				return PopScreen{
-					Command: func() tea.Msg {
-						return ChangeProvider{Name: name}
-					},
-				}
-			}
+			return popScreen(func() tea.Msg {
+				return ChangeProvider{Name: name}
+			})
 
 		case m.keybinds.ThemeChange.Key:
-			return m, func() tea.Msg {
-				return PushScreen{Screen: NewThemeChangeScreen(m.config, m.theme)}
-			}
+			screen := NewThemeChangeScreen(m.config, m.theme)
+			return pushScreen(&screen)
 
 		case m.keybinds.Cancel.Key:
-			return m, func() tea.Msg {
-				return PopScreen{}
-			}
+			return popScreen(nil)
 
 		case m.keybinds.Help.Key:
 			m.help.Toggle()
-			return m, nil
+			return nil
 		}
 	}
 
@@ -104,10 +93,10 @@ func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.help.Update(msg),
 	}
 
-	return m, tea.Batch(cmds...)
+	return tea.Batch(cmds...)
 }
 
-func (m modeScreen) View() tea.View {
+func (m *modeScreen) View() tea.View {
 	choicesView := m.choices.View()
 	previewView := m.preview.View()
 	helpView := m.help.View()

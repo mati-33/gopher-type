@@ -56,11 +56,7 @@ func NewTypingScreen(config config.Config, theme themes.Theme, width, height int
 	}
 }
 
-func (s typingScreen) Init() tea.Cmd {
-	return tea.ClearScreen
-}
-
-func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
 
@@ -81,7 +77,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.mode = modes.MustGetMode(msg.Name)
 		s.modeField.Value = s.mode.Name()
 		s.text.Text = s.mode.Generate(s.wordCount)
-		return s, tea.Batch(s.text.Reset()...)
+		return tea.Batch(s.text.Reset()...)
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -89,44 +85,38 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case s.keybinds.GoBack.Key:
 			if s.text.Started {
 				s.text.Text = s.mode.Generate(s.wordCount)
-				return s, tea.Batch(s.text.Reset()...)
+				return tea.Batch(s.text.Reset()...)
 			} else {
-				return s, func() tea.Msg { return PopScreen{} }
+				return popScreen(nil)
 			}
 
 		case s.keybinds.IncWordCount.Key:
 			s.wordCount++
 			s.wordCountField.Value = fmt.Sprintf("%d", s.wordCount)
 			s.text.Text = s.mode.Generate(s.wordCount)
-			return s, tea.Batch(s.text.Reset()...)
+			return tea.Batch(s.text.Reset()...)
 
 		case s.keybinds.DecWordCount.Key:
 			if s.wordCount > 1 {
 				s.wordCount--
 				s.wordCountField.Value = fmt.Sprintf("%d", s.wordCount)
 				s.text.Text = s.mode.Generate(s.wordCount)
-				return s, tea.Batch(s.text.Reset()...)
+				return tea.Batch(s.text.Reset()...)
 			} else {
-				return s, nil
+				return nil
 			}
 
 		case s.keybinds.ChangeMode.Key:
-			return s, func() tea.Msg {
-				return PushScreen{
-					Screen: NewModeScreen(s.config, s.theme, s.width, s.height),
-				}
-			}
+			screen := NewModeScreen(s.config, s.theme, s.width, s.height)
+			return pushScreen(&screen)
 
 		case s.keybinds.ChangeTheme.Key:
-			return s, func() tea.Msg {
-				return PushScreen{
-					Screen: NewThemeChangeScreen(s.config, s.theme),
-				}
-			}
+			screen := NewThemeChangeScreen(s.config, s.theme)
+			return pushScreen(&screen)
 
 		case s.keybinds.Help.Key:
 			s.help.Toggle()
-			return s, nil
+			return nil
 		}
 	}
 
@@ -139,7 +129,7 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.help.Update(msg),
 	)
 
-	return s, tea.Batch(cmds...)
+	return tea.Batch(cmds...)
 }
 
 func (s typingScreen) View() tea.View {

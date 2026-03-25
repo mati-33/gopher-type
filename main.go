@@ -27,7 +27,7 @@ func main() {
 }
 
 type model struct {
-	screenStack []tea.Model
+	screenStack []screens.Interface
 	width       int
 	height      int
 	config      config.Config
@@ -37,7 +37,7 @@ type model struct {
 func newModel() model {
 	config := config.NewDefault()
 	return model{
-		screenStack: []tea.Model{},
+		screenStack: []screens.Interface{},
 		config:      config,
 		theme:       themes.MustGetTheme(config.InitTheme),
 	}
@@ -56,8 +56,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if len(m.screenStack) == 0 {
 			return m, func() tea.Msg {
+				sc := screens.NewWelcomeScreen(m.config, m.theme, m.width, m.height)
 				return screens.PushScreen{
-					Screen: screens.NewWelcomeScreen(m.config, m.theme, m.width, m.height),
+					Screen: &sc,
 				}
 			}
 		}
@@ -70,7 +71,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case screens.PushScreen:
 		m.screenStack = append(m.screenStack, msg.Screen)
-		return m, msg.Screen.Init()
+		return m, nil
 
 	case screens.PopScreen:
 		m.screenStack = m.screenStack[:len(m.screenStack)-1]
@@ -78,14 +79,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case themes.Theme:
 		m.theme = msg
-		screens := make([]tea.Model, 0, len(m.screenStack))
 		cmds := make([]tea.Cmd, 0, len(m.screenStack))
+
 		for _, s := range m.screenStack {
-			ns, cmd := s.Update(msg)
-			screens = append(screens, ns)
-			cmds = append(cmds, cmd)
+			cmds = append(cmds, s.Update(msg))
 		}
-		m.screenStack = screens
+
 		return m, tea.Batch(cmds...)
 
 	case themes.ToggleTransparency:
@@ -98,8 +97,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	currentScreen := m.screenStack[len(m.screenStack)-1]
-	currentScreen, cmd := currentScreen.Update(msg)
-	m.screenStack[len(m.screenStack)-1] = currentScreen
+	cmd := currentScreen.Update(msg)
 
 	return m, cmd
 }

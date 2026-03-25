@@ -21,27 +21,23 @@ func NewThemeChangeScreen(config config.Config, theme themes.Theme) themeChangeS
 	}
 }
 
-func (t themeChangeScreen) Init() tea.Cmd {
-	return nil
-}
-
-func (t themeChangeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (t *themeChangeScreen) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case comp.ChoiceChanged:
-		return t, func() tea.Msg { return themes.MustGetTheme(msg.Name) }
+		return func() tea.Msg { return themes.MustGetTheme(msg.Name) }
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "l":
-			return t, func() tea.Msg { return themes.ToggleTransparency{} }
+			return func() tea.Msg { return themes.ToggleTransparency{} }
 		case "enter":
-			return t, func() tea.Msg { return PopScreen{} }
+			return func() tea.Msg { return PopScreen{} }
 		}
 	}
 
 	cmd := t.choices.Update(msg)
-	return t, cmd
+	return cmd
 }
 
-func (t themeChangeScreen) View() tea.View {
+func (t *themeChangeScreen) View() tea.View {
 	return tea.NewView(t.choices.View())
 }

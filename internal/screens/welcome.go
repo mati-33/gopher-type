@@ -45,17 +45,13 @@ func NewWelcomeScreen(config config.Config, theme themes.Theme, width, height in
 	}
 }
 
-func (s welcomeScreen) Init() tea.Cmd {
-	return nil
-}
-
-func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (s *welcomeScreen) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
 		s.width = msg.Width
 		s.height = msg.Height
-		return s, nil
+		return nil
 
 	case ChangeProvider:
 		s.modeName = msg.Name
@@ -67,33 +63,24 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 
 		case s.keybinds.Quit.Key:
-			return s, tea.Quit
+			return tea.Quit
 
 		case s.keybinds.Mode.Key:
-			return s, func() tea.Msg {
-				return PushScreen{
-					Screen: NewModeScreen(s.config, s.theme, s.width, s.height),
-				}
-			}
+			screen := NewModeScreen(s.config, s.theme, s.width, s.height)
+			return pushScreen(&screen)
 
 		case s.keybinds.Theme.Key:
-			return s, func() tea.Msg {
-				return PushScreen{
-					Screen: NewThemeChangeScreen(s.config, s.theme),
-				}
-			}
+			screen := NewThemeChangeScreen(s.config, s.theme)
+			return pushScreen(&screen)
 
 		case s.keybinds.Practise.Key:
-			return s, func() tea.Msg {
-				return PushScreen{
-					Screen: NewTypingScreen(
-						s.config,
-						s.theme,
-						s.width,
-						s.height,
-					),
-				}
-			}
+			screen := NewTypingScreen(
+				s.config,
+				s.theme,
+				s.width,
+				s.height,
+			)
+			return pushScreen(&screen)
 		}
 
 	}
@@ -104,10 +91,10 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.info.Update(msg),
 	}
 
-	return s, tea.Batch(cmds...)
+	return tea.Batch(cmds...)
 }
 
-func (s welcomeScreen) View() tea.View {
+func (s *welcomeScreen) View() tea.View {
 	bannerView := s.banner.View()
 	menuView := s.menu.View()
 	infoView := s.info.View()
