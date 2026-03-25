@@ -45,6 +45,7 @@ func NewTypingScreen(config config.Config, theme themes.Theme, width, height int
 			keybinds.IncWordCount,
 			keybinds.DecWordCount,
 			keybinds.ChangeMode,
+			keybinds.ChangeTheme,
 			keybinds.GoBack,
 			keybinds.Help,
 		}),
@@ -72,6 +73,9 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		s.speedField.Value = fmt.Sprintf("%dwpm", msg.Wpm)
 		s.accuracyField.Value = fmt.Sprintf("%.2f%%", 100.0*msg.Accuracy)
 		s.text.Text = s.mode.Generate(s.wordCount)
+
+	case themes.Theme:
+		s.theme = msg
 
 	case ChangeProvider:
 		s.mode = modes.MustGetMode(msg.Name)
@@ -113,14 +117,28 @@ func (s typingScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
+		case s.keybinds.ChangeTheme.Key:
+			return s, func() tea.Msg {
+				return PushScreen{
+					Screen: NewThemeChangeScreen(s.config, s.theme),
+				}
+			}
+
 		case s.keybinds.Help.Key:
 			s.help.Toggle()
 			return s, nil
 		}
 	}
 
-	cmd := s.text.Update(msg)
-	cmds = append(cmds, cmd)
+	cmds = append(cmds,
+		s.text.Update(msg),
+		s.speedField.Update(msg),
+		s.accuracyField.Update(msg),
+		s.modeField.Update(msg),
+		s.wordCountField.Update(msg),
+		s.help.Update(msg),
+	)
+
 	return s, tea.Batch(cmds...)
 }
 
@@ -166,6 +184,7 @@ type typingKeybinds struct {
 	IncWordCount comp.Keybind
 	DecWordCount comp.Keybind
 	ChangeMode   comp.Keybind
+	ChangeTheme  comp.Keybind
 	GoBack       comp.Keybind
 	Help         comp.Keybind
 }
@@ -175,6 +194,7 @@ func newTypingKeybinds() typingKeybinds {
 		IncWordCount: comp.Keybind{Key: "ctrl+o", Desc: "increase word count"},
 		DecWordCount: comp.Keybind{Key: "ctrl+p", Desc: "decrease word count"},
 		ChangeMode:   comp.Keybind{Key: "ctrl+n", Desc: "change mode"},
+		ChangeTheme:  comp.Keybind{Key: "ctrl+t", Desc: "change theme"},
 		GoBack:       comp.Keybind{Key: "esc", Desc: "go back"},
 		Help:         comp.Keybind{Key: "f1", Desc: "close help"},
 	}

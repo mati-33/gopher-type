@@ -45,23 +45,29 @@ func NewSelect(theme themes.Theme, choices []string, label, icon string) Select 
 	}
 }
 
-func (s Select) Update(msg tea.Msg) (Select, tea.Cmd) {
+func (s *Select) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
+
+	case themes.Theme:
+		s.Styles = newSelectStyles(msg)
+		return nil
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j":
 			if s.cursor < len(s.choices)-1 {
 				s.cursor++
-				return s, func() tea.Msg { return ChoiceChanged{s.choices[s.cursor]} }
+				return func() tea.Msg { return ChoiceChanged{s.choices[s.cursor]} }
 			}
 		case "k":
 			if s.cursor > 0 {
 				s.cursor--
-				return s, func() tea.Msg { return ChoiceChanged{s.choices[s.cursor]} }
+				return func() tea.Msg { return ChoiceChanged{s.choices[s.cursor]} }
 			}
 		}
 	}
-	return s, nil
+
+	return nil
 }
 
 func (s Select) View() string {

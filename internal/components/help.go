@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
@@ -35,6 +36,15 @@ func NewHelp(theme themes.Theme, keybinds []Keybind) Help {
 		Styles:   newHelpStyles(theme),
 		Keybinds: keybinds,
 	}
+}
+
+func (h *Help) Update(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case themes.Theme:
+		h.Styles = newHelpStyles(msg)
+	}
+
+	return nil
 }
 
 func (h Help) View() string {

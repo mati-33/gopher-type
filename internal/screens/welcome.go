@@ -60,6 +60,9 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ChangeProvider:
 		s.modeName = msg.Name
 
+	case themes.Theme:
+		s.theme = msg
+
 	case tea.KeyMsg:
 		switch msg.String() {
 
@@ -70,6 +73,13 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return s, func() tea.Msg {
 				return PushScreen{
 					Screen: NewModeScreen(s.config, s.theme, s.width, s.height),
+				}
+			}
+
+		case s.keybinds.Theme.Key:
+			return s, func() tea.Msg {
+				return PushScreen{
+					Screen: NewThemeChangeScreen(s.config, s.theme),
 				}
 			}
 
@@ -87,7 +97,14 @@ func (s welcomeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	}
-	return s, nil
+
+	cmds := []tea.Cmd{
+		s.banner.Update(msg),
+		s.menu.Update(msg),
+		s.info.Update(msg),
+	}
+
+	return s, tea.Batch(cmds...)
 }
 
 func (s welcomeScreen) View() tea.View {

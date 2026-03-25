@@ -75,6 +75,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case screens.PopScreen:
 		m.screenStack = m.screenStack[:len(m.screenStack)-1]
 		return m, msg.Command
+
+	case themes.Theme:
+		m.theme = msg
+		screens := make([]tea.Model, 0, len(m.screenStack))
+		cmds := make([]tea.Cmd, 0, len(m.screenStack))
+		for _, s := range m.screenStack {
+			ns, cmd := s.Update(msg)
+			screens = append(screens, ns)
+			cmds = append(cmds, cmd)
+		}
+		m.screenStack = screens
+		return m, tea.Batch(cmds...)
+
+	case themes.ToggleTransparency:
+		m.config.Transparent = !m.config.Transparent
+		return m, nil
 	}
 
 	if len(m.screenStack) == 0 {

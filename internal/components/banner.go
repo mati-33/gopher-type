@@ -3,6 +3,7 @@ package components
 import (
 	"strings"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
@@ -45,6 +46,15 @@ func NewBanner(theme themes.Theme, version string) Banner {
 		version:         version,
 		theme:           theme,
 	}
+}
+
+func (b *Banner) Update(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case themes.Theme:
+		b.Styles = newBannerStyles(msg)
+	}
+
+	return nil
 }
 
 func (b Banner) View() string {

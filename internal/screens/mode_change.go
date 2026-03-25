@@ -11,6 +11,7 @@ import (
 
 type modeScreen struct {
 	config   config.Config
+	theme    themes.Theme
 	width    int
 	height   int
 	preview  comp.Preview
@@ -27,6 +28,7 @@ func NewModeScreen(config config.Config, theme themes.Theme, width, height int) 
 
 	return modeScreen{
 		config:   config,
+		theme:    theme,
 		width:    width,
 		height:   height,
 		preview:  preview,
@@ -37,6 +39,7 @@ func NewModeScreen(config config.Config, theme themes.Theme, width, height int) 
 			keybinds.Previous,
 			keybinds.Refresh,
 			keybinds.Choose,
+			keybinds.ThemeChange,
 			keybinds.Cancel,
 			keybinds.Help,
 		}),
@@ -58,6 +61,9 @@ func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		m.preview.Width = int(float32(msg.Width) * 0.55)
 
+	case themes.Theme:
+		m.theme = msg
+
 	case tea.KeyMsg:
 		switch msg.String() {
 
@@ -76,6 +82,11 @@ func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
+		case m.keybinds.ThemeChange.Key:
+			return m, func() tea.Msg {
+				return PushScreen{Screen: NewThemeChangeScreen(m.config, m.theme)}
+			}
+
 		case m.keybinds.Cancel.Key:
 			return m, func() tea.Msg {
 				return PopScreen{}
@@ -87,10 +98,13 @@ func (m modeScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	choices, cmd := m.choices.Update(msg)
-	m.choices = choices
+	cmds := []tea.Cmd{
+		m.choices.Update(msg),
+		m.preview.Update(msg),
+		m.help.Update(msg),
+	}
 
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }
 
 func (m modeScreen) View() tea.View {
@@ -112,21 +126,23 @@ func (m modeScreen) View() tea.View {
 }
 
 type modeChangeKeybinds struct {
-	Next     comp.Keybind
-	Previous comp.Keybind
-	Refresh  comp.Keybind
-	Choose   comp.Keybind
-	Cancel   comp.Keybind
-	Help     comp.Keybind
+	Next        comp.Keybind
+	Previous    comp.Keybind
+	Refresh     comp.Keybind
+	Choose      comp.Keybind
+	ThemeChange comp.Keybind
+	Cancel      comp.Keybind
+	Help        comp.Keybind
 }
 
 func newModeChangeKeybinds() modeChangeKeybinds {
 	return modeChangeKeybinds{
-		Next:     comp.Keybind{Key: "j", Desc: "next"},
-		Previous: comp.Keybind{Key: "k", Desc: "previous"},
-		Refresh:  comp.Keybind{Key: "r", Desc: "refresh"},
-		Choose:   comp.Keybind{Key: "enter", Desc: "choose"},
-		Cancel:   comp.Keybind{Key: "esc", Desc: "cancel"},
-		Help:     comp.Keybind{Key: "f1", Desc: "close help"},
+		Next:        comp.Keybind{Key: "j", Desc: "next"},
+		Previous:    comp.Keybind{Key: "k", Desc: "previous"},
+		Refresh:     comp.Keybind{Key: "r", Desc: "refresh"},
+		Choose:      comp.Keybind{Key: "enter", Desc: "choose"},
+		ThemeChange: comp.Keybind{Key: "ctrl+t", Desc: "change theme"},
+		Cancel:      comp.Keybind{Key: "esc", Desc: "cancel"},
+		Help:        comp.Keybind{Key: "f1", Desc: "close help"},
 	}
 }

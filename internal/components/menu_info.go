@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
@@ -34,6 +35,15 @@ func NewMenuInfo(theme themes.Theme, modeName, themeName string, width int) Menu
 		themeName: themeName,
 		width:     width,
 	}
+}
+
+func (m *MenuInfo) Update(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case themes.Theme:
+		m.styles = newInfoStyles(msg)
+	}
+
+	return nil
 }
 
 func (i MenuInfo) View() string {

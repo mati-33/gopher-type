@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
@@ -33,6 +34,15 @@ func NewPreview(theme themes.Theme, width int, text string) Preview {
 		Width:  width,
 		Text:   text,
 	}
+}
+
+func (p *Preview) Update(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case themes.Theme:
+		p.Styles = newPreviewStyles(msg)
+	}
+
+	return nil
 }
 
 func (p Preview) View() string {

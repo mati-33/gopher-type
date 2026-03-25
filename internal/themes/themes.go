@@ -74,3 +74,15 @@ func MustGetTheme(name string) Theme {
 	}
 	panic("no theme with that name")
 }
+
+func GetThemeNames() []string {
+	names := make([]string, 0, len(registry))
+
+	for _, p := range registry {
+		names = append(names, p.Name)
+	}
+
+	return names
+}
+
+type ToggleTransparency struct{}

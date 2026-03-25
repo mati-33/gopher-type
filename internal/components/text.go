@@ -57,6 +57,10 @@ func NewText(theme themes.Theme, text []rune, width, height int) Text {
 func (t *Text) Update(msg tea.Msg) tea.Cmd {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
+
+	case themes.Theme:
+		t.Styles = NewTextStyles(msg)
+
 	case tea.KeyMsg:
 		if t.cursor == 0 {
 			cmds = append(cmds, t.stopwatch.Start())

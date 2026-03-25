@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 
+	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
@@ -35,6 +36,15 @@ func NewDetailField(theme themes.Theme, label, icon, value string) DetailField {
 		Icon:   icon,
 		Value:  value,
 	}
+}
+
+func (df *DetailField) Update(msg tea.Msg) tea.Cmd {
+	switch msg := msg.(type) {
+	case themes.Theme:
+		df.Styles = newDetailFieldStyles(msg)
+	}
+
+	return nil
 }
 
 func (df DetailField) View() string {
