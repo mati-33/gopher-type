@@ -23,16 +23,16 @@ func newInfoStyles(theme themes.Theme) MenuInfoStyles {
 
 type MenuInfo struct {
 	styles    MenuInfoStyles
-	modeName  string
-	themeName string
+	ModeName  string
+	ThemeName string
 	width     int
 }
 
 func NewMenuInfo(theme themes.Theme, modeName, themeName string, width int) MenuInfo {
 	return MenuInfo{
 		styles:    newInfoStyles(theme),
-		modeName:  modeName,
-		themeName: themeName,
+		ModeName:  modeName,
+		ThemeName: themeName,
 		width:     width,
 	}
 }
@@ -48,10 +48,10 @@ func (m *MenuInfo) Update(msg tea.Msg) tea.Cmd {
 
 func (i *MenuInfo) View() string {
 	ml := i.styles.text.Render("mode")
-	mv := i.styles.value.Render(i.modeName)
+	mv := i.styles.value.Render(i.ModeName)
 	m := fmt.Sprintf("%s%s%s", ml, strings.Repeat(" ", i.width-lipgloss.Width(ml)-lipgloss.Width(mv)), mv)
 	tl := i.styles.text.Render("theme")
-	tv := i.styles.value.Render(i.themeName)
+	tv := i.styles.value.Render(i.ThemeName)
 	t := fmt.Sprintf("%s%s%s", tl, strings.Repeat(" ", i.width-lipgloss.Width(tl)-lipgloss.Width(tv)), tv)
 
 	return lipgloss.JoinVertical(lipgloss.Left, m, t)

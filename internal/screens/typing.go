@@ -27,8 +27,7 @@ type typingScreen struct {
 	wordCountField comp.DetailField
 }
 
-func NewTypingScreen(config config.Config, theme themes.Theme, width, height int) *typingScreen {
-	mode := modes.MustGetMode(config.InitMode)
+func NewTypingScreen(config config.Config, theme themes.Theme, mode modes.Mode, width, height int) *typingScreen {
 	wc := config.InitWordCount
 	keybinds := newTypingKeybinds()
 

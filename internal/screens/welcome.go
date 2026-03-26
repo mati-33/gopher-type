@@ -6,6 +6,7 @@ import (
 
 	comp "github.com/mati-33/gopher-type/internal/components"
 	"github.com/mati-33/gopher-type/internal/config"
+	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/themes"
 	"github.com/mati-33/gopher-type/internal/version"
 )
@@ -16,7 +17,7 @@ type welcomeScreen struct {
 	height   int
 	banner   comp.Banner
 	menu     comp.Menu
-	modeName string
+	mode     modes.Mode
 	keybinds welcomeKeybinds
 	theme    themes.Theme
 	info     comp.MenuInfo
@@ -38,7 +39,7 @@ func NewWelcomeScreen(config config.Config, theme themes.Theme, width, height in
 		banner:   banner,
 		menu:     menu,
 		config:   config,
-		modeName: config.InitMode,
+		mode:     modes.MustGetMode(config.InitMode),
 		keybinds: keybinds,
 		theme:    theme,
 		info:     comp.NewMenuInfo(theme, config.InitMode, config.InitTheme, lipgloss.Width(banner.GopherTypeAscii)),
@@ -54,10 +55,12 @@ func (s *welcomeScreen) Update(msg tea.Msg) tea.Cmd {
 		return nil
 
 	case ChangeProvider:
-		s.modeName = msg.Name
+		s.mode = modes.MustGetMode(msg.Name)
+		s.info.ModeName = msg.Name
 
 	case themes.Theme:
 		s.theme = msg
+		s.info.ThemeName = msg.Name
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -75,6 +78,7 @@ func (s *welcomeScreen) Update(msg tea.Msg) tea.Cmd {
 			return pushScreen(NewTypingScreen(
 				s.config,
 				s.theme,
+				s.mode,
 				s.width,
 				s.height,
 			))
