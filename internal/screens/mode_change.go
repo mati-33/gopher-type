@@ -20,13 +20,13 @@ type modeScreen struct {
 	keybinds modeChangeKeybinds
 }
 
-func NewModeScreen(config config.Config, theme themes.Theme, width, height int) modeScreen {
+func NewModeScreen(config config.Config, theme themes.Theme, width, height int) *modeScreen {
 	choices := comp.NewSelect(theme, modes.GetModeNames(), "modes:", config.ModeIcon)
 	mode := modes.MustGetMode(choices.Selected())
 	preview := comp.NewPreview(theme, int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
 	keybinds := newModeChangeKeybinds()
 
-	return modeScreen{
+	return &modeScreen{
 		config:   config,
 		theme:    theme,
 		width:    width,
@@ -75,8 +75,7 @@ func (m *modeScreen) Update(msg tea.Msg) tea.Cmd {
 			})
 
 		case m.keybinds.ThemeChange.Key:
-			screen := NewThemeChangeScreen(m.config, m.theme)
-			return pushScreen(&screen)
+			return pushScreen(NewThemeChangeScreen(m.config, m.theme))
 
 		case m.keybinds.Cancel.Key:
 			return popScreen(nil)

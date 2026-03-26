@@ -13,8 +13,8 @@ type themeChangeScreen struct {
 	choices comp.Select
 }
 
-func NewThemeChangeScreen(config config.Config, theme themes.Theme) themeChangeScreen {
-	return themeChangeScreen{
+func NewThemeChangeScreen(config config.Config, theme themes.Theme) *themeChangeScreen {
+	return &themeChangeScreen{
 		config:  config,
 		theme:   theme,
 		choices: comp.NewSelect(theme, themes.GetThemeNames(), "themes:", "A"),

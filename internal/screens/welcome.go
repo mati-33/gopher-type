@@ -66,21 +66,18 @@ func (s *welcomeScreen) Update(msg tea.Msg) tea.Cmd {
 			return tea.Quit
 
 		case s.keybinds.Mode.Key:
-			screen := NewModeScreen(s.config, s.theme, s.width, s.height)
-			return pushScreen(&screen)
+			return pushScreen(NewModeScreen(s.config, s.theme, s.width, s.height))
 
 		case s.keybinds.Theme.Key:
-			screen := NewThemeChangeScreen(s.config, s.theme)
-			return pushScreen(&screen)
+			return pushScreen(NewThemeChangeScreen(s.config, s.theme))
 
 		case s.keybinds.Practise.Key:
-			screen := NewTypingScreen(
+			return pushScreen(NewTypingScreen(
 				s.config,
 				s.theme,
 				s.width,
 				s.height,
-			)
-			return pushScreen(&screen)
+			))
 		}
 
 	}

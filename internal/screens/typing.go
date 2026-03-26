@@ -27,12 +27,12 @@ type typingScreen struct {
 	wordCountField comp.DetailField
 }
 
-func NewTypingScreen(config config.Config, theme themes.Theme, width, height int) typingScreen {
+func NewTypingScreen(config config.Config, theme themes.Theme, width, height int) *typingScreen {
 	mode := modes.MustGetMode(config.InitMode)
 	wc := config.InitWordCount
 	keybinds := newTypingKeybinds()
 
-	return typingScreen{
+	return &typingScreen{
 		mode:      mode,
 		width:     width,
 		height:    height,
@@ -107,12 +107,10 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 			}
 
 		case s.keybinds.ChangeMode.Key:
-			screen := NewModeScreen(s.config, s.theme, s.width, s.height)
-			return pushScreen(&screen)
+			return pushScreen(NewModeScreen(s.config, s.theme, s.width, s.height))
 
 		case s.keybinds.ChangeTheme.Key:
-			screen := NewThemeChangeScreen(s.config, s.theme)
-			return pushScreen(&screen)
+			return pushScreen(NewThemeChangeScreen(s.config, s.theme))
 
 		case s.keybinds.Help.Key:
 			s.help.Toggle()
