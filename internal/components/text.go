@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"charm.land/bubbles/v2/stopwatch"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mati-33/gopher-type/internal/themes"
@@ -38,24 +37,22 @@ type Text struct {
 	Styles    TextStyles
 	cursor    int
 	errors    []int
-	stopwatch stopwatch.Model
+	startedAt time.Time
 }
 
 func NewText(theme themes.Theme, text []rune, width, height int) Text {
 	return Text{
-		Width:     width,
-		Height:    height,
-		Started:   false,
-		Styles:    NewTextStyles(theme),
-		cursor:    0,
-		Text:      text,
-		errors:    []int{},
-		stopwatch: stopwatch.New(stopwatch.WithInterval(time.Millisecond)),
+		Width:   width,
+		Height:  height,
+		Started: false,
+		Styles:  NewTextStyles(theme),
+		cursor:  0,
+		Text:    text,
+		errors:  []int{},
 	}
 }
 
 func (t *Text) Update(msg tea.Msg) tea.Cmd {
-	var cmds []tea.Cmd
 	switch msg := msg.(type) {
 
 	case themes.Theme:
@@ -63,8 +60,8 @@ func (t *Text) Update(msg tea.Msg) tea.Cmd {
 
 	case tea.KeyMsg:
 		if t.cursor == 0 {
-			cmds = append(cmds, t.stopwatch.Start())
 			t.Started = true
+			t.startedAt = time.Now()
 		}
 
 		got := msg.String()
@@ -81,26 +78,21 @@ func (t *Text) Update(msg tea.Msg) tea.Cmd {
 		if t.cursor < len(t.Text)-1 {
 			t.cursor++
 		} else {
-			wpm := calculateWpm(len(t.Text), t.stopwatch.Elapsed())
+			wpm := calculateWpm(len(t.Text), time.Since(t.startedAt))
 			acc := calculateAccuracy(len(t.Text), len(t.errors))
+			t.Reset()
 
-			cmd := func() tea.Msg {
+			return func() tea.Msg {
 				return TextResult{
 					Wpm:      wpm,
 					Accuracy: acc,
 				}
 			}
-			cmds = append(cmds, t.Reset()...)
-			cmds = append(cmds, cmd)
 		}
 
 	}
 
-	stopwatch, cmd := t.stopwatch.Update(msg)
-	t.stopwatch = stopwatch
-	cmds = append(cmds, cmd)
-
-	return tea.Batch(cmds...)
+	return nil
 }
 
 func (t *Text) View() string {
@@ -137,15 +129,10 @@ func (t *Text) View() string {
 	return lipgloss.JoinVertical(0, linesStr...)
 }
 
-func (t *Text) Reset() []tea.Cmd {
+func (t *Text) Reset() {
 	t.cursor = 0
 	t.errors = []int{}
 	t.Started = false
-
-	return []tea.Cmd{
-		t.stopwatch.Stop(),
-		t.stopwatch.Reset(),
-	}
 }
 
 type TextResult struct {

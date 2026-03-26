@@ -77,7 +77,8 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 		s.mode = modes.MustGetMode(msg.Name)
 		s.modeField.Value = s.mode.Name()
 		s.text.Text = s.mode.Generate(s.wordCount)
-		return tea.Batch(s.text.Reset()...)
+		s.text.Reset()
+		return nil
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -85,7 +86,8 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 		case s.keybinds.GoBack.Key:
 			if s.text.Started {
 				s.text.Text = s.mode.Generate(s.wordCount)
-				return tea.Batch(s.text.Reset()...)
+				s.text.Reset()
+				return nil
 			} else {
 				return popScreen(nil)
 			}
@@ -94,18 +96,19 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 			s.wordCount++
 			s.wordCountField.Value = fmt.Sprintf("%d", s.wordCount)
 			s.text.Text = s.mode.Generate(s.wordCount)
-			return tea.Batch(s.text.Reset()...)
+			s.text.Reset()
+			return nil
 
 		case s.keybinds.DecWordCount.Key:
 			if s.wordCount > 1 {
 				s.wordCount--
 				s.wordCountField.Value = fmt.Sprintf("%d", s.wordCount)
 				s.text.Text = s.mode.Generate(s.wordCount)
-				return tea.Batch(s.text.Reset()...)
+				s.text.Reset()
+				return nil
 			} else {
 				return nil
 			}
-
 		case s.keybinds.ChangeMode.Key:
 			return pushScreen(NewModeScreen(s.config, s.theme, s.width, s.height))
 
