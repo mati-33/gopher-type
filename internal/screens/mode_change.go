@@ -4,37 +4,29 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	comp "github.com/mati-33/gopher-type/internal/components"
-	"github.com/mati-33/gopher-type/internal/config"
+	"github.com/mati-33/gopher-type/internal/ctx"
 	"github.com/mati-33/gopher-type/internal/modes"
-	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type modeScreen struct {
-	config   config.Config
-	theme    themes.Theme
-	width    int
-	height   int
+	ctx      *ctx.Context
 	preview  comp.Preview
 	choices  comp.Select
 	help     comp.Help
 	keybinds modeChangeKeybinds
 }
 
-func NewModeScreen(config config.Config, theme themes.Theme, width, height int) *modeScreen {
-	choices := comp.NewSelect(theme, modes.GetModeNames(), "modes:", config.ModeIcon)
+func NewModeScreen(ctx *ctx.Context) *modeScreen {
+	choices := comp.NewSelect(ctx.Theme, modes.GetModeNames(), "modes:", ctx.Config.ModeIcon)
 	mode := modes.MustGetMode(choices.Selected())
-	preview := comp.NewPreview(theme, int(float32(width)*0.55), string(mode.Generate(config.PreviewSize)))
+	preview := comp.NewPreview(ctx.Theme, int(float32(ctx.Width)*0.55), string(mode.Generate(ctx.Config.PreviewSize)))
 	keybinds := newModeChangeKeybinds()
 
 	return &modeScreen{
-		config:   config,
-		theme:    theme,
-		width:    width,
-		height:   height,
-		preview:  preview,
-		choices:  choices,
-		keybinds: keybinds,
-		help: comp.NewHelp(theme, []comp.Keybind{
+		ctx:     ctx,
+		preview: preview,
+		choices: choices,
+		help: comp.NewHelp(ctx.Theme, []comp.Keybind{
 			keybinds.Next,
 			keybinds.Previous,
 			keybinds.Refresh,
@@ -43,6 +35,7 @@ func NewModeScreen(config config.Config, theme themes.Theme, width, height int) 
 			keybinds.Cancel,
 			keybinds.Help,
 		}),
+		keybinds: keybinds,
 	}
 }
 
@@ -50,15 +43,10 @@ func (m *modeScreen) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case comp.ChoiceChanged:
 		mode := modes.MustGetMode(msg.Name)
-		m.preview.Text = string(mode.Generate(m.config.PreviewSize))
+		m.preview.Text = string(mode.Generate(m.ctx.Config.PreviewSize))
 
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
 		m.preview.Width = int(float32(msg.Width) * 0.55)
-
-	case themes.Theme:
-		m.theme = msg
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -66,7 +54,7 @@ func (m *modeScreen) Update(msg tea.Msg) tea.Cmd {
 		case m.keybinds.Refresh.Key:
 			name := m.choices.Selected()
 			mode := modes.MustGetMode(name)
-			m.preview.Text = string(mode.Generate(m.config.PreviewSize))
+			m.preview.Text = string(mode.Generate(m.ctx.Config.PreviewSize))
 
 		case m.keybinds.Choose.Key:
 			name := m.choices.Selected()
@@ -75,7 +63,7 @@ func (m *modeScreen) Update(msg tea.Msg) tea.Cmd {
 			})
 
 		case m.keybinds.ThemeChange.Key:
-			return pushScreen(NewThemeChangeScreen(m.config, m.theme))
+			return pushScreen(NewThemeChangeScreen(m.ctx))
 
 		case m.keybinds.Cancel.Key:
 			return popScreen(nil)
@@ -99,14 +87,14 @@ func (m *modeScreen) View() tea.View {
 	choicesView := m.choices.View()
 	previewView := m.preview.View()
 	helpView := m.help.View()
-	helpOffset := max(0, m.width-lipgloss.Width(helpView)-2)
+	helpOffset := max(0, m.ctx.Width-lipgloss.Width(helpView)-2)
 
 	layer := lipgloss.NewLayer(lipgloss.Place(
-		m.width, m.height,
+		m.ctx.Width, m.ctx.Height,
 		lipgloss.Center, lipgloss.Center,
 		lipgloss.JoinHorizontal(lipgloss.Top, choicesView, "     ", previewView),
 	),
-		lipgloss.NewLayer(helpView).Y(m.height-lipgloss.Height(helpView)).X(helpOffset),
+		lipgloss.NewLayer(helpView).Y(m.ctx.Height-lipgloss.Height(helpView)).X(helpOffset),
 	)
 
 	c := lipgloss.NewCompositor(layer)

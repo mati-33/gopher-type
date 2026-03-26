@@ -5,28 +5,23 @@ import (
 	"charm.land/lipgloss/v2"
 
 	comp "github.com/mati-33/gopher-type/internal/components"
-	"github.com/mati-33/gopher-type/internal/config"
-	"github.com/mati-33/gopher-type/internal/modes"
+	"github.com/mati-33/gopher-type/internal/ctx"
 	"github.com/mati-33/gopher-type/internal/themes"
 	"github.com/mati-33/gopher-type/internal/version"
 )
 
 type welcomeScreen struct {
-	config   config.Config
-	width    int
-	height   int
+	ctx      *ctx.Context
 	banner   comp.Banner
 	menu     comp.Menu
-	mode     modes.Mode
-	keybinds welcomeKeybinds
-	theme    themes.Theme
 	info     comp.MenuInfo
+	keybinds welcomeKeybinds
 }
 
-func NewWelcomeScreen(config config.Config, theme themes.Theme, width, height int) welcomeScreen {
+func NewWelcomeScreen(ctx *ctx.Context) welcomeScreen {
 	keybinds := newWelcomeKeybind()
-	banner := comp.NewBanner(theme, version.Version)
-	menu := comp.NewMenu(theme, []comp.Keybind{
+	banner := comp.NewBanner(ctx.Theme, version.Version)
+	menu := comp.NewMenu(ctx.Theme, []comp.Keybind{
 		keybinds.Practise,
 		keybinds.Mode,
 		keybinds.Theme,
@@ -34,32 +29,21 @@ func NewWelcomeScreen(config config.Config, theme themes.Theme, width, height in
 	}, lipgloss.Width(banner.GopherTypeAscii))
 
 	return welcomeScreen{
-		width:    width,
-		height:   height,
+		ctx:      ctx,
+		keybinds: keybinds,
 		banner:   banner,
 		menu:     menu,
-		config:   config,
-		mode:     modes.MustGetMode(config.InitMode),
-		keybinds: keybinds,
-		theme:    theme,
-		info:     comp.NewMenuInfo(theme, config.InitMode, config.InitTheme, lipgloss.Width(banner.GopherTypeAscii)),
+		info:     comp.NewMenuInfo(ctx.Theme, ctx.Mode.Name(), ctx.Theme.Name, lipgloss.Width(banner.GopherTypeAscii)),
 	}
 }
 
 func (s *welcomeScreen) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 
-	case tea.WindowSizeMsg:
-		s.width = msg.Width
-		s.height = msg.Height
-		return nil
-
 	case ChangeProvider:
-		s.mode = modes.MustGetMode(msg.Name)
 		s.info.ModeName = msg.Name
 
 	case themes.Theme:
-		s.theme = msg
 		s.info.ThemeName = msg.Name
 
 	case tea.KeyMsg:
@@ -69,19 +53,13 @@ func (s *welcomeScreen) Update(msg tea.Msg) tea.Cmd {
 			return tea.Quit
 
 		case s.keybinds.Mode.Key:
-			return pushScreen(NewModeScreen(s.config, s.theme, s.width, s.height))
+			return pushScreen(NewModeScreen(s.ctx))
 
 		case s.keybinds.Theme.Key:
-			return pushScreen(NewThemeChangeScreen(s.config, s.theme))
+			return pushScreen(NewThemeChangeScreen(s.ctx))
 
 		case s.keybinds.Practise.Key:
-			return pushScreen(NewTypingScreen(
-				s.config,
-				s.theme,
-				s.mode,
-				s.width,
-				s.height,
-			))
+			return pushScreen(NewTypingScreen(s.ctx))
 		}
 
 	}
@@ -102,7 +80,7 @@ func (s *welcomeScreen) View() tea.View {
 	screen := lipgloss.JoinVertical(lipgloss.Center, bannerView, "", "", menuView, infoView)
 
 	return tea.NewView(lipgloss.Place(
-		s.width, s.height,
+		s.ctx.Width, s.ctx.Height,
 		lipgloss.Center, 0.7,
 		screen,
 	))

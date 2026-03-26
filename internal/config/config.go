@@ -14,8 +14,8 @@ type Config struct {
 	PreviewIcon   string
 }
 
-func NewDefault() Config {
-	return Config{
+func NewDefault() *Config {
+	return &Config{
 		InitTheme:     "gopher type",
 		InitMode:      "english",
 		InitWordCount: 15,

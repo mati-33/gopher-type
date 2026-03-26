@@ -5,7 +5,8 @@ import (
 	"os"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/mati-33/gopher-type/internal/config"
+	"github.com/mati-33/gopher-type/internal/ctx"
+	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
@@ -27,19 +28,14 @@ func main() {
 }
 
 type model struct {
+	ctx         *ctx.Context
 	screenStack []screens.Interface
-	width       int
-	height      int
-	config      config.Config
-	theme       themes.Theme
 }
 
 func newModel() model {
-	config := config.NewDefault()
 	return model{
+		ctx:         ctx.New(),
 		screenStack: []screens.Interface{},
-		config:      config,
-		theme:       themes.MustGetTheme(config.InitTheme),
 	}
 }
 
@@ -51,12 +47,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
+		m.ctx.Width = msg.Width
+		m.ctx.Height = msg.Height
+
+		if len(m.screenStack) > 0 {
+			return m, nil
+		}
 
 		if len(m.screenStack) == 0 {
 			return m, func() tea.Msg {
-				sc := screens.NewWelcomeScreen(m.config, m.theme, m.width, m.height)
+				sc := screens.NewWelcomeScreen(m.ctx)
 				return screens.PushScreen{
 					Screen: &sc,
 				}
@@ -77,18 +77,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.screenStack = m.screenStack[:len(m.screenStack)-1]
 		return m, msg.Command
 
+	case screens.ChangeProvider:
+		m.ctx.Mode = modes.MustGetMode(msg.Name)
+		return m, tea.Batch(m.passToAll(msg)...)
+
 	case themes.Theme:
-		m.theme = msg
-		cmds := make([]tea.Cmd, 0, len(m.screenStack))
-
-		for _, s := range m.screenStack {
-			cmds = append(cmds, s.Update(msg))
-		}
-
-		return m, tea.Batch(cmds...)
+		m.ctx.Theme = msg
+		return m, tea.Batch(m.passToAll(msg)...)
 
 	case themes.ToggleTransparency:
-		m.config.Transparent = !m.config.Transparent
+		m.ctx.Config.Transparent = !m.ctx.Config.Transparent
 		return m, nil
 	}
 
@@ -106,11 +104,21 @@ func (m model) View() tea.View {
 	if len(m.screenStack) > 0 {
 		view := m.screenStack[len(m.screenStack)-1].View()
 		view.AltScreen = true
-		if !m.config.Transparent {
-			view.BackgroundColor = m.theme.Background
+		if !m.ctx.Config.Transparent {
+			view.BackgroundColor = m.ctx.Theme.Background
 		}
 		return view
 	}
 
 	return tea.NewView("")
+}
+
+func (m model) passToAll(msg tea.Msg) []tea.Cmd {
+	cmds := make([]tea.Cmd, 0, len(m.screenStack))
+
+	for _, s := range m.screenStack {
+		cmds = append(cmds, s.Update(msg))
+	}
+
+	return cmds
 }

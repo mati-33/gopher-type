@@ -6,41 +6,30 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	comp "github.com/mati-33/gopher-type/internal/components"
-	"github.com/mati-33/gopher-type/internal/config"
+	"github.com/mati-33/gopher-type/internal/ctx"
 	"github.com/mati-33/gopher-type/internal/modes"
-	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type typingScreen struct {
-	config         config.Config
-	theme          themes.Theme
-	keybinds       typingKeybinds
-	mode           modes.Mode
-	width          int
-	height         int
-	wordCount      int
+	ctx            *ctx.Context
 	text           comp.Text
 	help           comp.Help
 	speedField     comp.DetailField
 	accuracyField  comp.DetailField
 	modeField      comp.DetailField
 	wordCountField comp.DetailField
+	wordCount      int
+	keybinds       typingKeybinds
 }
 
-func NewTypingScreen(config config.Config, theme themes.Theme, mode modes.Mode, width, height int) *typingScreen {
-	wc := config.InitWordCount
+func NewTypingScreen(ctx *ctx.Context) *typingScreen {
+	wc := ctx.Config.InitWordCount
 	keybinds := newTypingKeybinds()
 
 	return &typingScreen{
-		mode:      mode,
-		width:     width,
-		height:    height,
-		wordCount: config.InitWordCount,
-		text:      comp.NewText(theme, mode.Generate(wc), int(float32(width)*0.7), height),
-		config:    config,
-		theme:     theme,
-		keybinds:  keybinds,
-		help: comp.NewHelp(theme, []comp.Keybind{
+		ctx:  ctx,
+		text: comp.NewText(ctx.Theme, ctx.Mode.Generate(wc), int(float32(ctx.Width)*0.7), ctx.Height),
+		help: comp.NewHelp(ctx.Theme, []comp.Keybind{
 			keybinds.IncWordCount,
 			keybinds.DecWordCount,
 			keybinds.ChangeMode,
@@ -48,10 +37,12 @@ func NewTypingScreen(config config.Config, theme themes.Theme, mode modes.Mode, 
 			keybinds.GoBack,
 			keybinds.Help,
 		}),
-		speedField:     comp.NewDetailField(theme, "speed", config.SpeedIcon, "-"),
-		accuracyField:  comp.NewDetailField(theme, "accuracy", config.AccuracyIncon, "-"),
-		modeField:      comp.NewDetailField(theme, "mode", config.ModeIcon, mode.Name()),
-		wordCountField: comp.NewDetailField(theme, "word count", config.WordCountIcon, "15"),
+		speedField:     comp.NewDetailField(ctx.Theme, "speed", ctx.Config.SpeedIcon, "-"),
+		accuracyField:  comp.NewDetailField(ctx.Theme, "accuracy", ctx.Config.AccuracyIncon, "-"),
+		modeField:      comp.NewDetailField(ctx.Theme, "mode", ctx.Config.ModeIcon, ctx.Mode.Name()),
+		wordCountField: comp.NewDetailField(ctx.Theme, "word count", ctx.Config.WordCountIcon, "15"),
+		wordCount:      ctx.Config.InitWordCount,
+		keybinds:       keybinds,
 	}
 }
 
@@ -60,22 +51,17 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 
 	case tea.WindowSizeMsg:
-		s.width = msg.Width
-		s.height = msg.Height
-		s.text.Width = int(float32(s.width) * 0.7)
+		s.text.Width = int(float32(s.ctx.Width) * 0.7)
 
 	case comp.TextResult:
 		s.speedField.Value = fmt.Sprintf("%dwpm", msg.Wpm)
 		s.accuracyField.Value = fmt.Sprintf("%.2f%%", 100.0*msg.Accuracy)
-		s.text.Text = s.mode.Generate(s.wordCount)
-
-	case themes.Theme:
-		s.theme = msg
+		s.text.Text = s.ctx.Mode.Generate(s.wordCount)
 
 	case ChangeProvider:
-		s.mode = modes.MustGetMode(msg.Name)
-		s.modeField.Value = s.mode.Name()
-		s.text.Text = s.mode.Generate(s.wordCount)
+		s.ctx.Mode = modes.MustGetMode(msg.Name)
+		s.modeField.Value = s.ctx.Mode.Name()
+		s.text.Text = s.ctx.Mode.Generate(s.wordCount)
 		s.text.Reset()
 		return nil
 
@@ -84,7 +70,7 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 
 		case s.keybinds.GoBack.Key:
 			if s.text.Started {
-				s.text.Text = s.mode.Generate(s.wordCount)
+				s.text.Text = s.ctx.Mode.Generate(s.wordCount)
 				s.text.Reset()
 				return nil
 			} else {
@@ -94,7 +80,7 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 		case s.keybinds.IncWordCount.Key:
 			s.wordCount++
 			s.wordCountField.Value = fmt.Sprintf("%d", s.wordCount)
-			s.text.Text = s.mode.Generate(s.wordCount)
+			s.text.Text = s.ctx.Mode.Generate(s.wordCount)
 			s.text.Reset()
 			return nil
 
@@ -102,17 +88,17 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 			if s.wordCount > 1 {
 				s.wordCount--
 				s.wordCountField.Value = fmt.Sprintf("%d", s.wordCount)
-				s.text.Text = s.mode.Generate(s.wordCount)
+				s.text.Text = s.ctx.Mode.Generate(s.wordCount)
 				s.text.Reset()
 				return nil
 			} else {
 				return nil
 			}
 		case s.keybinds.ChangeMode.Key:
-			return pushScreen(NewModeScreen(s.config, s.theme, s.width, s.height))
+			return pushScreen(NewModeScreen(s.ctx))
 
 		case s.keybinds.ChangeTheme.Key:
-			return pushScreen(NewThemeChangeScreen(s.config, s.theme))
+			return pushScreen(NewThemeChangeScreen(s.ctx))
 
 		case s.keybinds.Help.Key:
 			s.help.Toggle()
@@ -133,17 +119,17 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 }
 
 func (s typingScreen) View() tea.View {
-	bannerOffset := int(float32(s.height) * 0.2)
+	bannerOffset := int(float32(s.ctx.Height) * 0.2)
 
-	if s.height < 14 {
+	if s.ctx.Height < 14 {
 		bannerOffset = 0
 	}
 
 	helpView := s.help.View()
-	helpOffset := max(0, s.width-lipgloss.Width(helpView)-2)
+	helpOffset := max(0, s.ctx.Width-lipgloss.Width(helpView)-2)
 
 	bannerView := lipgloss.PlaceHorizontal(
-		s.width,
+		s.ctx.Width,
 		lipgloss.Center,
 		lipgloss.JoinHorizontal(lipgloss.Top,
 			s.speedField.View(),
@@ -158,12 +144,12 @@ func (s typingScreen) View() tea.View {
 
 	textView := s.text.View()
 	textLayer := lipgloss.NewLayer(lipgloss.Place(
-		s.width, s.height,
+		s.ctx.Width, s.ctx.Height,
 		lipgloss.Center, lipgloss.Center,
 		textView,
 	),
 		lipgloss.NewLayer(bannerView).Y(bannerOffset),
-		lipgloss.NewLayer(helpView).Y(s.height-lipgloss.Height(helpView)).X(helpOffset),
+		lipgloss.NewLayer(helpView).Y(s.ctx.Height-lipgloss.Height(helpView)).X(helpOffset),
 	)
 
 	c := lipgloss.NewCompositor(textLayer)

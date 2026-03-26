@@ -3,21 +3,19 @@ package screens
 import (
 	tea "charm.land/bubbletea/v2"
 	comp "github.com/mati-33/gopher-type/internal/components"
-	"github.com/mati-33/gopher-type/internal/config"
+	"github.com/mati-33/gopher-type/internal/ctx"
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
 type themeChangeScreen struct {
-	config  config.Config
-	theme   themes.Theme
+	ctx     *ctx.Context
 	choices comp.Select
 }
 
-func NewThemeChangeScreen(config config.Config, theme themes.Theme) *themeChangeScreen {
+func NewThemeChangeScreen(ctx *ctx.Context) *themeChangeScreen {
 	return &themeChangeScreen{
-		config:  config,
-		theme:   theme,
-		choices: comp.NewSelect(theme, themes.GetThemeNames(), "themes:", "A"),
+		ctx:     ctx,
+		choices: comp.NewSelect(ctx.Theme, themes.GetThemeNames(), "themes:", "A"),
 	}
 }
 
