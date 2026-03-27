@@ -13,9 +13,12 @@ type themeChange struct {
 }
 
 func NewThemeChange(ctx *appcontex.AppContext) *themeChange {
+	choices := comp.NewSelect(ctx.Theme, themes.GetThemeNames(), "themes:", "A")
+	choices.SetSelected(ctx.Theme.Name)
+
 	return &themeChange{
 		ctx:     ctx,
-		choices: comp.NewSelect(ctx.Theme, themes.GetThemeNames(), "themes:", "A"),
+		choices: choices,
 	}
 }
 

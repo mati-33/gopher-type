@@ -94,6 +94,14 @@ func (s *Select) Selected() string {
 	return s.options[s.cursor]
 }
 
+func (s *Select) SetSelected(option string) {
+	for i, o := range s.options {
+		if o == option {
+			s.cursor = i
+		}
+	}
+}
+
 type SelectChanged struct {
 	Option string
 }

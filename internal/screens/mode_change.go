@@ -18,8 +18,8 @@ type modeChange struct {
 
 func NewModeChange(ctx *appcontex.AppContext) *modeChange {
 	choices := comp.NewSelect(ctx.Theme, modes.GetModeNames(), "modes:", ctx.Config.ModeIcon)
-	mode := modes.MustGetMode(choices.Selected())
-	preview := comp.NewPreview(ctx.Theme, int(float32(ctx.Width)*0.55), string(mode.Generate(ctx.Config.PreviewSize)))
+	choices.SetSelected(ctx.Mode.Name())
+	preview := comp.NewPreview(ctx.Theme, int(float32(ctx.Width)*0.55), string(ctx.Mode.Generate(ctx.Config.PreviewSize)))
 	keybinds := newModeChangeKeybinds()
 
 	return &modeChange{
