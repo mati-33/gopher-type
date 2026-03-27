@@ -11,21 +11,21 @@ import (
 type modeChange struct {
 	ctx      *appcontex.AppContext
 	preview  comp.Preview
-	choices  comp.Select
+	picker   comp.Select
 	help     comp.Help
 	keybinds modeChangeKeybinds
 }
 
 func NewModeChange(ctx *appcontex.AppContext) *modeChange {
-	choices := comp.NewSelect(ctx.Theme, modes.GetModeNames(), "modes:", ctx.Config.ModeIcon)
-	choices.SetSelected(ctx.Mode.Name())
+	picker := comp.NewSelect(ctx.Theme, modes.GetModeNames(), "modes:", ctx.Config.ModeIcon)
+	picker.SetSelected(ctx.Mode.Name())
 	preview := comp.NewPreview(ctx.Theme, int(float32(ctx.Width)*0.55), string(ctx.Mode.Generate(ctx.Config.PreviewSize)))
 	keybinds := newModeChangeKeybinds()
 
 	return &modeChange{
 		ctx:     ctx,
 		preview: preview,
-		choices: choices,
+		picker:  picker,
 		help: comp.NewHelp(ctx.Theme, []comp.Keybind{
 			keybinds.Next,
 			keybinds.Previous,
@@ -52,12 +52,12 @@ func (m *modeChange) Update(msg tea.Msg) tea.Cmd {
 		switch msg.String() {
 
 		case m.keybinds.Refresh.Key:
-			name := m.choices.Selected()
+			name := m.picker.Selected()
 			mode := modes.MustGetMode(name)
 			m.preview.Text = string(mode.Generate(m.ctx.Config.PreviewSize))
 
 		case m.keybinds.Choose.Key:
-			name := m.choices.Selected()
+			name := m.picker.Selected()
 			return pop(func() tea.Msg {
 				return ChangeProvider{Name: name}
 			})
@@ -75,7 +75,7 @@ func (m *modeChange) Update(msg tea.Msg) tea.Cmd {
 	}
 
 	cmds := []tea.Cmd{
-		m.choices.Update(msg),
+		m.picker.Update(msg),
 		m.preview.Update(msg),
 		m.help.Update(msg),
 	}
@@ -84,7 +84,7 @@ func (m *modeChange) Update(msg tea.Msg) tea.Cmd {
 }
 
 func (m *modeChange) View() tea.View {
-	choicesView := m.choices.View()
+	pickerView := m.picker.View()
 	previewView := m.preview.View()
 	helpView := m.help.View()
 	helpOffset := max(0, m.ctx.Width-lipgloss.Width(helpView)-2)
@@ -92,7 +92,7 @@ func (m *modeChange) View() tea.View {
 	layer := lipgloss.NewLayer(lipgloss.Place(
 		m.ctx.Width, m.ctx.Height,
 		lipgloss.Center, lipgloss.Center,
-		lipgloss.JoinHorizontal(lipgloss.Top, choicesView, "     ", previewView),
+		lipgloss.JoinHorizontal(lipgloss.Top, pickerView, "     ", previewView),
 	),
 		lipgloss.NewLayer(helpView).Y(m.ctx.Height-lipgloss.Height(helpView)).X(helpOffset),
 	)

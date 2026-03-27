@@ -8,17 +8,17 @@ import (
 )
 
 type themeChange struct {
-	ctx     *appcontex.AppContext
-	choices comp.Select
+	ctx    *appcontex.AppContext
+	picker comp.Select
 }
 
 func NewThemeChange(ctx *appcontex.AppContext) *themeChange {
-	choices := comp.NewSelect(ctx.Theme, themes.GetThemeNames(), "themes:", "A")
-	choices.SetSelected(ctx.Theme.Name)
+	picker := comp.NewSelect(ctx.Theme, themes.GetThemeNames(), "themes:", "A")
+	picker.SetSelected(ctx.Theme.Name)
 
 	return &themeChange{
-		ctx:     ctx,
-		choices: choices,
+		ctx:    ctx,
+		picker: picker,
 	}
 }
 
@@ -35,10 +35,10 @@ func (t *themeChange) Update(msg tea.Msg) tea.Cmd {
 		}
 	}
 
-	cmd := t.choices.Update(msg)
+	cmd := t.picker.Update(msg)
 	return cmd
 }
 
 func (t *themeChange) View() tea.View {
-	return tea.NewView(t.choices.View())
+	return tea.NewView(t.picker.View())
 }
