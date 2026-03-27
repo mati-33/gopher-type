@@ -10,7 +10,7 @@ import (
 	"github.com/mati-33/gopher-type/internal/version"
 )
 
-type welcomeScreen struct {
+type welcome struct {
 	ctx      *appcontex.AppContext
 	banner   comp.Banner
 	menu     comp.Menu
@@ -18,7 +18,7 @@ type welcomeScreen struct {
 	keybinds welcomeKeybinds
 }
 
-func NewWelcomeScreen(ctx *appcontex.AppContext) welcomeScreen {
+func NewWelcome(ctx *appcontex.AppContext) *welcome {
 	keybinds := newWelcomeKeybind()
 	banner := comp.NewBanner(ctx.Theme, version.Version)
 	menu := comp.NewMenu(ctx.Theme, []comp.Keybind{
@@ -28,7 +28,7 @@ func NewWelcomeScreen(ctx *appcontex.AppContext) welcomeScreen {
 		keybinds.Quit,
 	}, lipgloss.Width(banner.GopherTypeAscii))
 
-	return welcomeScreen{
+	return &welcome{
 		ctx:      ctx,
 		keybinds: keybinds,
 		banner:   banner,
@@ -37,7 +37,7 @@ func NewWelcomeScreen(ctx *appcontex.AppContext) welcomeScreen {
 	}
 }
 
-func (s *welcomeScreen) Update(msg tea.Msg) tea.Cmd {
+func (s *welcome) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 
 	case ChangeProvider:
@@ -53,13 +53,13 @@ func (s *welcomeScreen) Update(msg tea.Msg) tea.Cmd {
 			return tea.Quit
 
 		case s.keybinds.Mode.Key:
-			return pushScreen(NewModeScreen(s.ctx))
+			return push(NewModeChange(s.ctx))
 
 		case s.keybinds.Theme.Key:
-			return pushScreen(NewThemeChangeScreen(s.ctx))
+			return push(NewThemeChange(s.ctx))
 
 		case s.keybinds.Practise.Key:
-			return pushScreen(NewTypingScreen(s.ctx))
+			return push(NewTyping(s.ctx))
 		}
 
 	}
@@ -73,7 +73,7 @@ func (s *welcomeScreen) Update(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (s *welcomeScreen) View() tea.View {
+func (s *welcome) View() tea.View {
 	bannerView := s.banner.View()
 	menuView := s.menu.View()
 	infoView := s.info.View()

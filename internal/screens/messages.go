@@ -4,11 +4,11 @@ import (
 	tea "charm.land/bubbletea/v2"
 )
 
-type PushScreen struct {
+type Push struct {
 	Screen Interface
 }
 
-type PopScreen struct {
+type Pop struct {
 	Command tea.Cmd
 }
 

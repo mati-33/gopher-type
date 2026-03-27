@@ -10,7 +10,7 @@ import (
 	"github.com/mati-33/gopher-type/internal/modes"
 )
 
-type typingScreen struct {
+type typing struct {
 	ctx            *appcontex.AppContext
 	text           comp.Text
 	help           comp.Help
@@ -22,11 +22,11 @@ type typingScreen struct {
 	keybinds       typingKeybinds
 }
 
-func NewTypingScreen(ctx *appcontex.AppContext) *typingScreen {
+func NewTyping(ctx *appcontex.AppContext) *typing {
 	wc := ctx.Config.InitWordCount
 	keybinds := newTypingKeybinds()
 
-	return &typingScreen{
+	return &typing{
 		ctx:  ctx,
 		text: comp.NewText(ctx.Theme, ctx.Mode.Generate(wc), int(float32(ctx.Width)*0.7), ctx.Height),
 		help: comp.NewHelp(ctx.Theme, []comp.Keybind{
@@ -46,7 +46,7 @@ func NewTypingScreen(ctx *appcontex.AppContext) *typingScreen {
 	}
 }
 
-func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
+func (s *typing) Update(msg tea.Msg) tea.Cmd {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
 
@@ -74,7 +74,7 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 				s.text.Reset()
 				return nil
 			} else {
-				return popScreen(nil)
+				return pop(nil)
 			}
 
 		case s.keybinds.IncWordCount.Key:
@@ -95,10 +95,10 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 				return nil
 			}
 		case s.keybinds.ChangeMode.Key:
-			return pushScreen(NewModeScreen(s.ctx))
+			return push(NewModeChange(s.ctx))
 
 		case s.keybinds.ChangeTheme.Key:
-			return pushScreen(NewThemeChangeScreen(s.ctx))
+			return push(NewThemeChange(s.ctx))
 
 		case s.keybinds.Help.Key:
 			s.help.Toggle()
@@ -118,7 +118,7 @@ func (s *typingScreen) Update(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (s typingScreen) View() tea.View {
+func (s typing) View() tea.View {
 	bannerOffset := int(float32(s.ctx.Height) * 0.2)
 
 	if s.ctx.Height < 14 {

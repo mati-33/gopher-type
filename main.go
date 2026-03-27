@@ -56,9 +56,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if len(m.screenStack) == 0 {
 			return m, func() tea.Msg {
-				sc := screens.NewWelcomeScreen(m.ctx)
-				return screens.PushScreen{
-					Screen: &sc,
+				return screens.Push{
+					Screen: screens.NewWelcome(m.ctx),
 				}
 			}
 		}
@@ -69,11 +68,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-	case screens.PushScreen:
+	case screens.Push:
 		m.screenStack = append(m.screenStack, msg.Screen)
 		return m, nil
 
-	case screens.PopScreen:
+	case screens.Pop:
 		m.screenStack = m.screenStack[:len(m.screenStack)-1]
 		return m, msg.Command
 

@@ -8,7 +8,7 @@ import (
 	"github.com/mati-33/gopher-type/internal/modes"
 )
 
-type modeScreen struct {
+type modeChange struct {
 	ctx      *appcontex.AppContext
 	preview  comp.Preview
 	choices  comp.Select
@@ -16,13 +16,13 @@ type modeScreen struct {
 	keybinds modeChangeKeybinds
 }
 
-func NewModeScreen(ctx *appcontex.AppContext) *modeScreen {
+func NewModeChange(ctx *appcontex.AppContext) *modeChange {
 	choices := comp.NewSelect(ctx.Theme, modes.GetModeNames(), "modes:", ctx.Config.ModeIcon)
 	mode := modes.MustGetMode(choices.Selected())
 	preview := comp.NewPreview(ctx.Theme, int(float32(ctx.Width)*0.55), string(mode.Generate(ctx.Config.PreviewSize)))
 	keybinds := newModeChangeKeybinds()
 
-	return &modeScreen{
+	return &modeChange{
 		ctx:     ctx,
 		preview: preview,
 		choices: choices,
@@ -39,7 +39,7 @@ func NewModeScreen(ctx *appcontex.AppContext) *modeScreen {
 	}
 }
 
-func (m *modeScreen) Update(msg tea.Msg) tea.Cmd {
+func (m *modeChange) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case comp.ChoiceChanged:
 		mode := modes.MustGetMode(msg.Name)
@@ -58,15 +58,15 @@ func (m *modeScreen) Update(msg tea.Msg) tea.Cmd {
 
 		case m.keybinds.Choose.Key:
 			name := m.choices.Selected()
-			return popScreen(func() tea.Msg {
+			return pop(func() tea.Msg {
 				return ChangeProvider{Name: name}
 			})
 
 		case m.keybinds.ThemeChange.Key:
-			return pushScreen(NewThemeChangeScreen(m.ctx))
+			return push(NewThemeChange(m.ctx))
 
 		case m.keybinds.Cancel.Key:
-			return popScreen(nil)
+			return pop(nil)
 
 		case m.keybinds.Help.Key:
 			m.help.Toggle()
@@ -83,7 +83,7 @@ func (m *modeScreen) Update(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (m *modeScreen) View() tea.View {
+func (m *modeChange) View() tea.View {
 	choicesView := m.choices.View()
 	previewView := m.preview.View()
 	helpView := m.help.View()

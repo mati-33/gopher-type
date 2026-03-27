@@ -7,19 +7,19 @@ import (
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
-type themeChangeScreen struct {
+type themeChange struct {
 	ctx     *appcontex.AppContext
 	choices comp.Select
 }
 
-func NewThemeChangeScreen(ctx *appcontex.AppContext) *themeChangeScreen {
-	return &themeChangeScreen{
+func NewThemeChange(ctx *appcontex.AppContext) *themeChange {
+	return &themeChange{
 		ctx:     ctx,
 		choices: comp.NewSelect(ctx.Theme, themes.GetThemeNames(), "themes:", "A"),
 	}
 }
 
-func (t *themeChangeScreen) Update(msg tea.Msg) tea.Cmd {
+func (t *themeChange) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case comp.ChoiceChanged:
 		return func() tea.Msg { return themes.MustGetTheme(msg.Name) }
@@ -28,7 +28,7 @@ func (t *themeChangeScreen) Update(msg tea.Msg) tea.Cmd {
 		case "l":
 			return func() tea.Msg { return themes.ToggleTransparency{} }
 		case "enter":
-			return func() tea.Msg { return PopScreen{} }
+			return func() tea.Msg { return Pop{} }
 		}
 	}
 
@@ -36,6 +36,6 @@ func (t *themeChangeScreen) Update(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (t *themeChangeScreen) View() tea.View {
+func (t *themeChange) View() tea.View {
 	return tea.NewView(t.choices.View())
 }
