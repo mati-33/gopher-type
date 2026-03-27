@@ -21,8 +21,8 @@ func NewThemeChange(ctx *appcontex.AppContext) *themeChange {
 
 func (t *themeChange) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
-	case comp.ChoiceChanged:
-		return func() tea.Msg { return themes.MustGetTheme(msg.Name) }
+	case comp.SelectChanged:
+		return func() tea.Msg { return themes.MustGetTheme(msg.Option) }
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "l":

@@ -30,16 +30,16 @@ func newSelectStyles(theme themes.Theme) SelectStyles {
 
 type Select struct {
 	Styles  SelectStyles
-	choices []string
+	options []string
 	cursor  int
 	label   string
 	icon    string
 }
 
-func NewSelect(theme themes.Theme, choices []string, label, icon string) Select {
+func NewSelect(theme themes.Theme, options []string, label, icon string) Select {
 	return Select{
 		Styles:  newSelectStyles(theme),
-		choices: choices,
+		options: options,
 		label:   label,
 		icon:    icon,
 	}
@@ -55,14 +55,14 @@ func (s *Select) Update(msg tea.Msg) tea.Cmd {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j":
-			if s.cursor < len(s.choices)-1 {
+			if s.cursor < len(s.options)-1 {
 				s.cursor++
-				return func() tea.Msg { return ChoiceChanged{s.choices[s.cursor]} }
+				return func() tea.Msg { return SelectChanged{s.options[s.cursor]} }
 			}
 		case "k":
 			if s.cursor > 0 {
 				s.cursor--
-				return func() tea.Msg { return ChoiceChanged{s.choices[s.cursor]} }
+				return func() tea.Msg { return SelectChanged{s.options[s.cursor]} }
 			}
 		}
 	}
@@ -74,14 +74,14 @@ func (s *Select) View() string {
 	b := strings.Builder{}
 	cursorWidth := lipgloss.Width(s.Styles.Cursor.Render())
 
-	for i, choice := range s.choices {
+	for i, o := range s.options {
 		cursor := strings.Repeat(" ", cursorWidth)
 		style := s.Styles.Normal
 		if i == s.cursor {
 			cursor = s.Styles.Cursor.Render()
 			style = s.Styles.Selected
 		}
-		fmt.Fprintf(&b, "%s%s\n", cursor, style.Render(choice))
+		fmt.Fprintf(&b, "%s%s\n", cursor, style.Render(o))
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Left,
@@ -91,9 +91,9 @@ func (s *Select) View() string {
 }
 
 func (s *Select) Selected() string {
-	return s.choices[s.cursor]
+	return s.options[s.cursor]
 }
 
-type ChoiceChanged struct {
-	Name string
+type SelectChanged struct {
+	Option string
 }

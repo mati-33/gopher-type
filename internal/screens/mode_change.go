@@ -41,8 +41,8 @@ func NewModeChange(ctx *appcontex.AppContext) *modeChange {
 
 func (m *modeChange) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
-	case comp.ChoiceChanged:
-		mode := modes.MustGetMode(msg.Name)
+	case comp.SelectChanged:
+		mode := modes.MustGetMode(msg.Option)
 		m.preview.Text = string(mode.Generate(m.ctx.Config.PreviewSize))
 
 	case tea.WindowSizeMsg:
