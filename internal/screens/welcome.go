@@ -73,17 +73,17 @@ func (s *welcome) Update(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (s *welcome) View() tea.View {
+func (s *welcome) View() string {
 	bannerView := s.banner.View()
 	menuView := s.menu.View()
 	infoView := s.info.View()
 	screen := lipgloss.JoinVertical(lipgloss.Center, bannerView, "", "", menuView, infoView)
 
-	return tea.NewView(lipgloss.Place(
+	return lipgloss.Place(
 		s.ctx.Width, s.ctx.Height,
 		lipgloss.Center, 0.7,
 		screen,
-	))
+	)
 }
 
 type welcomeKeybinds struct {

@@ -101,11 +101,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() tea.View {
 	if len(m.screenStack) > 0 {
-		view := m.screenStack[len(m.screenStack)-1].View()
+		viewStr := m.screenStack[len(m.screenStack)-1].View()
+		view := tea.NewView(viewStr)
 		view.AltScreen = true
+
 		if !m.ctx.Config.Transparent {
 			view.BackgroundColor = m.ctx.Theme.Background
 		}
+
 		return view
 	}
 

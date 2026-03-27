@@ -118,7 +118,7 @@ func (s *typing) Update(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (s typing) View() tea.View {
+func (s typing) View() string {
 	bannerOffset := int(float32(s.ctx.Height) * 0.2)
 
 	if s.ctx.Height < 14 {
@@ -153,7 +153,7 @@ func (s typing) View() tea.View {
 	)
 
 	c := lipgloss.NewCompositor(textLayer)
-	return tea.NewView(c.Render())
+	return c.Render()
 }
 
 type typingKeybinds struct {

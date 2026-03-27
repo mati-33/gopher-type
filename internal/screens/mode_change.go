@@ -83,7 +83,7 @@ func (m *modeChange) Update(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-func (m *modeChange) View() tea.View {
+func (m *modeChange) View() string {
 	pickerView := m.picker.View()
 	previewView := m.preview.View()
 	helpView := m.help.View()
@@ -98,7 +98,8 @@ func (m *modeChange) View() tea.View {
 	)
 
 	c := lipgloss.NewCompositor(layer)
-	return tea.NewView(c.Render())
+
+	return c.Render()
 }
 
 type modeChangeKeybinds struct {

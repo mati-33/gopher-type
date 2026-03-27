@@ -39,6 +39,6 @@ func (t *themeChange) Update(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (t *themeChange) View() tea.View {
-	return tea.NewView(t.picker.View())
+func (t *themeChange) View() string {
+	return t.picker.View()
 }
