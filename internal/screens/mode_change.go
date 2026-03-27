@@ -3,20 +3,20 @@ package screens
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/appcontex"
 	comp "github.com/mati-33/gopher-type/internal/components"
-	"github.com/mati-33/gopher-type/internal/ctx"
 	"github.com/mati-33/gopher-type/internal/modes"
 )
 
 type modeScreen struct {
-	ctx      *ctx.Context
+	ctx      *appcontex.AppContext
 	preview  comp.Preview
 	choices  comp.Select
 	help     comp.Help
 	keybinds modeChangeKeybinds
 }
 
-func NewModeScreen(ctx *ctx.Context) *modeScreen {
+func NewModeScreen(ctx *appcontex.AppContext) *modeScreen {
 	choices := comp.NewSelect(ctx.Theme, modes.GetModeNames(), "modes:", ctx.Config.ModeIcon)
 	mode := modes.MustGetMode(choices.Selected())
 	preview := comp.NewPreview(ctx.Theme, int(float32(ctx.Width)*0.55), string(mode.Generate(ctx.Config.PreviewSize)))

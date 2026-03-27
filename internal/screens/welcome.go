@@ -4,21 +4,21 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
+	"github.com/mati-33/gopher-type/internal/appcontex"
 	comp "github.com/mati-33/gopher-type/internal/components"
-	"github.com/mati-33/gopher-type/internal/ctx"
 	"github.com/mati-33/gopher-type/internal/themes"
 	"github.com/mati-33/gopher-type/internal/version"
 )
 
 type welcomeScreen struct {
-	ctx      *ctx.Context
+	ctx      *appcontex.AppContext
 	banner   comp.Banner
 	menu     comp.Menu
 	info     comp.MenuInfo
 	keybinds welcomeKeybinds
 }
 
-func NewWelcomeScreen(ctx *ctx.Context) welcomeScreen {
+func NewWelcomeScreen(ctx *appcontex.AppContext) welcomeScreen {
 	keybinds := newWelcomeKeybind()
 	banner := comp.NewBanner(ctx.Theme, version.Version)
 	menu := comp.NewMenu(ctx.Theme, []comp.Keybind{

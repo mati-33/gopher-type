@@ -5,7 +5,7 @@ import (
 	"os"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/mati-33/gopher-type/internal/ctx"
+	"github.com/mati-33/gopher-type/internal/appcontex"
 	"github.com/mati-33/gopher-type/internal/modes"
 	"github.com/mati-33/gopher-type/internal/screens"
 	"github.com/mati-33/gopher-type/internal/themes"
@@ -28,13 +28,13 @@ func main() {
 }
 
 type model struct {
-	ctx         *ctx.Context
+	ctx         *appcontex.AppContext
 	screenStack []screens.Interface
 }
 
 func newModel() model {
 	return model{
-		ctx:         ctx.New(),
+		ctx:         appcontex.New(),
 		screenStack: []screens.Interface{},
 	}
 }

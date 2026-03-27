@@ -5,13 +5,13 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mati-33/gopher-type/internal/appcontex"
 	comp "github.com/mati-33/gopher-type/internal/components"
-	"github.com/mati-33/gopher-type/internal/ctx"
 	"github.com/mati-33/gopher-type/internal/modes"
 )
 
 type typingScreen struct {
-	ctx            *ctx.Context
+	ctx            *appcontex.AppContext
 	text           comp.Text
 	help           comp.Help
 	speedField     comp.DetailField
@@ -22,7 +22,7 @@ type typingScreen struct {
 	keybinds       typingKeybinds
 }
 
-func NewTypingScreen(ctx *ctx.Context) *typingScreen {
+func NewTypingScreen(ctx *appcontex.AppContext) *typingScreen {
 	wc := ctx.Config.InitWordCount
 	keybinds := newTypingKeybinds()
 

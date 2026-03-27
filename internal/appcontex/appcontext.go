@@ -1,4 +1,4 @@
-package ctx
+package appcontex
 
 import (
 	"github.com/mati-33/gopher-type/internal/config"
@@ -6,7 +6,7 @@ import (
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
-type Context struct {
+type AppContext struct {
 	Config *config.Config
 	Theme  themes.Theme
 	Mode   modes.Mode
@@ -14,10 +14,10 @@ type Context struct {
 	Height int
 }
 
-func New() *Context {
+func New() *AppContext {
 	cfg := config.NewDefault()
 
-	return &Context{
+	return &AppContext{
 		Config: cfg,
 		Theme:  themes.MustGetTheme(cfg.InitTheme),
 		Mode:   modes.MustGetMode(cfg.InitMode),
