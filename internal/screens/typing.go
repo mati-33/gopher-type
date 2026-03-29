@@ -28,7 +28,7 @@ func NewTyping(ctx *appcontex.AppContext) *typing {
 
 	return &typing{
 		ctx:  ctx,
-		text: comp.NewText(ctx.Theme, ctx.Mode.Generate(wc), int(float32(ctx.Width)*0.7), ctx.Height),
+		text: comp.NewText(ctx.Theme, ctx.Mode.Generate(wc)),
 		help: comp.NewHelp(ctx.Theme, []comp.Keybind{
 			keybinds.IncWordCount,
 			keybinds.DecWordCount,
@@ -49,9 +49,6 @@ func NewTyping(ctx *appcontex.AppContext) *typing {
 func (s *typing) Update(msg tea.Msg) tea.Cmd {
 	var cmds []tea.Cmd
 	switch msg := msg.(type) {
-
-	case tea.WindowSizeMsg:
-		s.text.Width = int(float32(s.ctx.Width) * 0.7)
 
 	case comp.TextResult:
 		s.speedField.Value = fmt.Sprintf("%dwpm", msg.Wpm)
@@ -142,7 +139,7 @@ func (s typing) View() string {
 		),
 	)
 
-	textView := s.text.View()
+	textView := s.text.View(int(float32(s.ctx.Width) * 0.7))
 	textLayer := lipgloss.NewLayer(lipgloss.Place(
 		s.ctx.Width, s.ctx.Height,
 		lipgloss.Center, lipgloss.Center,

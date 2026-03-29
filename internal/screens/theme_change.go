@@ -27,6 +27,9 @@ func NewThemeChange(ctx *appcontex.AppContext) *themeChange {
 	picker := comp.NewSelect(ctx.Theme, themes.GetThemeNames(), "themes:", ctx.Config.ThemeIcon)
 	picker.SetSelected(ctx.Theme.Name)
 	keybinds := newThemeChangeKeybinds()
+	mockText := comp.NewText(ctx.Theme, []rune("lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"))
+	mockText.Cursor = 65
+	mockText.Errors = []int{2, 3, 4, 18, 19, 20, 31, 32, 33, 34, 38, 39, 58, 59, 60}
 
 	return &themeChange{
 		ctx:    ctx,
@@ -44,7 +47,7 @@ func NewThemeChange(ctx *appcontex.AppContext) *themeChange {
 		mockAccuracy:  comp.NewDetailField(ctx.Theme, "accuracy", ctx.Config.AccuracyIncon, "97.23%"),
 		mockMode:      comp.NewDetailField(ctx.Theme, "mode", ctx.Config.ModeIcon, "english"),
 		mockWordCount: comp.NewDetailField(ctx.Theme, "word count", ctx.Config.WordCountIcon, "15"),
-		mockText:      comp.NewText(ctx.Theme, []rune("hello world foo bar hehe"), 30, 2),
+		mockText:      mockText,
 	}
 }
 
@@ -100,15 +103,15 @@ func (t *themeChange) View() string {
 		t.mockWordCount.View(),
 	)
 
-	mockTextView := t.mockText.View()
+	mockTextView := t.mockText.View(min(60, int(float32(t.ctx.Width)*0.55)))
 
 	l := lipgloss.NewLayer(lipgloss.Place(
 		t.ctx.Width, t.ctx.Height,
-		lipgloss.Center, lipgloss.Center,
+		lipgloss.Center, 0.6,
 		lipgloss.JoinHorizontal(lipgloss.Top,
 			t.picker.View(),
 			strings.Repeat(" ", 10),
-			lipgloss.JoinVertical(lipgloss.Center, bannerView, mockTextView),
+			lipgloss.JoinVertical(lipgloss.Center, bannerView, "  ", mockTextView),
 		),
 	),
 		lipgloss.NewLayer(helpView).Y(helpYOffset).X(helpXOffset),

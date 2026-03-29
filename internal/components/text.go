@@ -30,25 +30,21 @@ func NewTextStyles(theme themes.Theme) TextStyles {
 }
 
 type Text struct {
-	Width     int
-	Height    int
 	Text      []rune
 	Started   bool
 	Styles    TextStyles
-	cursor    int
-	errors    []int
+	Cursor    int
+	Errors    []int
 	startedAt time.Time
 }
 
-func NewText(theme themes.Theme, text []rune, width, height int) Text {
+func NewText(theme themes.Theme, text []rune) Text {
 	return Text{
-		Width:   width,
-		Height:  height,
 		Started: false,
 		Styles:  NewTextStyles(theme),
-		cursor:  0,
+		Cursor:  0,
 		Text:    text,
-		errors:  []int{},
+		Errors:  []int{},
 	}
 }
 
@@ -59,27 +55,27 @@ func (t *Text) Update(msg tea.Msg) tea.Cmd {
 		t.Styles = NewTextStyles(msg)
 
 	case tea.KeyMsg:
-		if t.cursor == 0 {
+		if t.Cursor == 0 {
 			t.Started = true
 			t.startedAt = time.Now()
 		}
 
 		got := msg.String()
-		expected := string(t.Text[t.cursor])
+		expected := string(t.Text[t.Cursor])
 
 		if got == "space" {
 			got = " "
 		}
 
 		if got != expected {
-			t.errors = append(t.errors, t.cursor)
+			t.Errors = append(t.Errors, t.Cursor)
 		}
 
-		if t.cursor < len(t.Text)-1 {
-			t.cursor++
+		if t.Cursor < len(t.Text)-1 {
+			t.Cursor++
 		} else {
 			wpm := calculateWpm(len(t.Text), time.Since(t.startedAt))
-			acc := calculateAccuracy(len(t.Text), len(t.errors))
+			acc := calculateAccuracy(len(t.Text), len(t.Errors))
 			t.Reset()
 
 			return func() tea.Msg {
@@ -95,9 +91,9 @@ func (t *Text) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (t *Text) View() string {
+func (t *Text) View(width int) string {
 	linesStr := []string{}
-	lines := splitText(t.Text, t.Width)
+	lines := splitText(t.Text, width)
 	i := 0
 
 	for _, line := range lines {
@@ -107,14 +103,14 @@ func (t *Text) View() string {
 			var style lipgloss.Style
 
 			switch {
-			case i < t.cursor && slices.Contains(t.errors, i):
+			case i < t.Cursor && slices.Contains(t.Errors, i):
 				if char == " " {
 					char = "."
 				}
 				style = t.Styles.Error
-			case i < t.cursor:
+			case i < t.Cursor:
 				style = t.Styles.After
-			case i == t.cursor:
+			case i == t.Cursor:
 				style = t.Styles.Cursor
 			default:
 				style = t.Styles.Before
@@ -130,8 +126,8 @@ func (t *Text) View() string {
 }
 
 func (t *Text) Reset() {
-	t.cursor = 0
-	t.errors = []int{}
+	t.Cursor = 0
+	t.Errors = []int{}
 	t.Started = false
 }
 
