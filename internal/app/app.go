@@ -1,0 +1,107 @@
+package app
+
+import (
+	tea "charm.land/bubbletea/v2"
+	"github.com/mati-33/gopher-type/internal/appcontex"
+	"github.com/mati-33/gopher-type/internal/modes"
+	"github.com/mati-33/gopher-type/internal/screens"
+	"github.com/mati-33/gopher-type/internal/themes"
+)
+
+type Model struct {
+	ctx         *appcontex.AppContext
+	screenStack []screens.Interface
+}
+
+func New() Model {
+	return Model{
+		ctx:         appcontex.New(),
+		screenStack: []screens.Interface{},
+	}
+}
+
+func (m Model) Init() tea.Cmd {
+	return nil
+}
+
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+
+	case tea.WindowSizeMsg:
+		m.ctx.Width = msg.Width
+		m.ctx.Height = msg.Height
+
+		if len(m.screenStack) > 0 {
+			return m, nil
+		}
+
+		if len(m.screenStack) == 0 {
+			return m, func() tea.Msg {
+				return screens.Push{
+					Screen: screens.NewWelcome(m.ctx),
+				}
+			}
+		}
+
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c":
+			return m, tea.Quit
+		}
+
+	case screens.Push:
+		m.screenStack = append(m.screenStack, msg.Screen)
+		return m, nil
+
+	case screens.Pop:
+		m.screenStack = m.screenStack[:len(m.screenStack)-1]
+		return m, msg.Command
+
+	case screens.ChangeProvider:
+		m.ctx.Mode = modes.MustGetMode(msg.Name)
+		return m, tea.Batch(m.passToAll(msg)...)
+
+	case themes.Theme:
+		m.ctx.Theme = msg
+		return m, tea.Batch(m.passToAll(msg)...)
+
+	case themes.ToggleTransparency:
+		m.ctx.Config.Transparent = !m.ctx.Config.Transparent
+		return m, nil
+	}
+
+	if len(m.screenStack) == 0 {
+		return m, nil
+	}
+
+	currentScreen := m.screenStack[len(m.screenStack)-1]
+	cmd := currentScreen.Update(msg)
+
+	return m, cmd
+}
+
+func (m Model) View() tea.View {
+	if len(m.screenStack) > 0 {
+		viewStr := m.screenStack[len(m.screenStack)-1].View()
+		view := tea.NewView(viewStr)
+		view.AltScreen = true
+
+		if !m.ctx.Config.Transparent {
+			view.BackgroundColor = m.ctx.Theme.Background
+		}
+
+		return view
+	}
+
+	return tea.NewView("")
+}
+
+func (m Model) passToAll(msg tea.Msg) []tea.Cmd {
+	cmds := make([]tea.Cmd, 0, len(m.screenStack))
+
+	for _, s := range m.screenStack {
+		cmds = append(cmds, s.Update(msg))
+	}
+
+	return cmds
+}
