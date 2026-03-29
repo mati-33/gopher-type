@@ -25,13 +25,11 @@ func newPreviewStyles(theme themes.Theme) PreviewStyles {
 type Preview struct {
 	Styles PreviewStyles
 	Text   string
-	Width  int
 }
 
-func NewPreview(theme themes.Theme, width int, text string) Preview {
+func NewPreview(theme themes.Theme, text string) Preview {
 	return Preview{
 		Styles: newPreviewStyles(theme),
-		Width:  width,
 		Text:   text,
 	}
 }
@@ -45,9 +43,9 @@ func (p *Preview) Update(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (p *Preview) View() string {
+func (p *Preview) View(width int) string {
 	return lipgloss.JoinVertical(lipgloss.Left,
 		fmt.Sprintf("%s%s", p.Styles.TitleIcon.Render(), p.Styles.Title.Render("preview:")),
-		p.Styles.Text.Width(p.Width).Render(p.Text),
+		p.Styles.Text.Width(width).Render(p.Text),
 	)
 }
