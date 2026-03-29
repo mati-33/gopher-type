@@ -12,6 +12,7 @@ type Config struct {
 	ModeIcon      string
 	WordCountIcon string
 	PreviewIcon   string
+	ThemeIcon     string
 }
 
 func NewDefault() *Config {
@@ -26,5 +27,6 @@ func NewDefault() *Config {
 		ModeIcon:      "󰦨",
 		WordCountIcon: "",
 		PreviewIcon:   "󱎸",
+		ThemeIcon:     "",
 	}
 }
