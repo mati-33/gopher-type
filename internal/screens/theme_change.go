@@ -24,7 +24,7 @@ type themeChange struct {
 }
 
 func NewThemeChange(ctx *appcontex.AppContext) *themeChange {
-	picker := comp.NewSelect(ctx.Theme, themes.GetThemeNames(), "themes:", ctx.Config.ThemeIcon)
+	picker := comp.NewSelect(ctx.Theme, themes.GetThemeNames(), "themes:", ctx.Config.Icons.Theme)
 	picker.SetSelected(ctx.Theme.Name)
 	keybinds := newThemeChangeKeybinds()
 	mockText := comp.NewText(ctx.Theme, []rune("lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"))
@@ -43,10 +43,10 @@ func NewThemeChange(ctx *appcontex.AppContext) *themeChange {
 		}),
 		keybinds:      keybinds,
 		initialTheme:  ctx.Theme,
-		mockSpeed:     comp.NewDetailField(ctx.Theme, "speed", ctx.Config.SpeedIcon, "64wpm"),
-		mockAccuracy:  comp.NewDetailField(ctx.Theme, "accuracy", ctx.Config.AccuracyIncon, "97.23%"),
-		mockMode:      comp.NewDetailField(ctx.Theme, "mode", ctx.Config.ModeIcon, "english"),
-		mockWordCount: comp.NewDetailField(ctx.Theme, "word count", ctx.Config.WordCountIcon, "15"),
+		mockSpeed:     comp.NewDetailField(ctx.Theme, "speed", ctx.Config.Icons.Speed, "64wpm"),
+		mockAccuracy:  comp.NewDetailField(ctx.Theme, "accuracy", ctx.Config.Icons.Accuracy, "97.23%"),
+		mockMode:      comp.NewDetailField(ctx.Theme, "mode", ctx.Config.Icons.Mode, "english"),
+		mockWordCount: comp.NewDetailField(ctx.Theme, "word count", ctx.Config.Icons.WordCount, "15"),
 		mockText:      mockText,
 	}
 }

@@ -18,19 +18,21 @@ func newPreviewStyles(theme themes.Theme) PreviewStyles {
 	return PreviewStyles{
 		Title:     lipgloss.NewStyle().Foreground(theme.Text).MarginBottom(1),
 		Text:      lipgloss.NewStyle().Align(lipgloss.Left).Foreground(theme.TextMuted).MarginLeft(2),
-		TitleIcon: lipgloss.NewStyle().SetString("󱎸").PaddingRight(1).Foreground(theme.Primary),
+		TitleIcon: lipgloss.NewStyle().PaddingRight(1).Foreground(theme.Primary),
 	}
 }
 
 type Preview struct {
 	Styles PreviewStyles
 	Text   string
+	Icon   string
 }
 
-func NewPreview(theme themes.Theme, text string) Preview {
+func NewPreview(theme themes.Theme, text, icon string) Preview {
 	return Preview{
 		Styles: newPreviewStyles(theme),
 		Text:   text,
+		Icon:   icon,
 	}
 }
 
@@ -45,7 +47,7 @@ func (p *Preview) Update(msg tea.Msg) tea.Cmd {
 
 func (p *Preview) View(width int) string {
 	return lipgloss.JoinVertical(lipgloss.Left,
-		fmt.Sprintf("%s%s", p.Styles.TitleIcon.Render(), p.Styles.Title.Render("preview:")),
+		fmt.Sprintf("%s%s", p.Styles.TitleIcon.Render(p.Icon), p.Styles.Title.Render("preview:")),
 		p.Styles.Text.Width(width).Render(p.Text),
 	)
 }

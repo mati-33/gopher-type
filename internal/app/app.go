@@ -13,9 +13,9 @@ type Model struct {
 	screenStack []screens.Interface
 }
 
-func New() Model {
+func New(appctx *appcontex.AppContext) Model {
 	return Model{
-		ctx:         appcontex.New(),
+		ctx:         appctx,
 		screenStack: []screens.Interface{},
 	}
 }

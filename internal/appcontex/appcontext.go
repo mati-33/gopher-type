@@ -14,9 +14,7 @@ type AppContext struct {
 	Height int
 }
 
-func New() *AppContext {
-	cfg := config.NewDefault()
-
+func New(cfg *config.Config) *AppContext {
 	return &AppContext{
 		Config: cfg,
 		Theme:  themes.MustGetTheme(cfg.InitTheme),

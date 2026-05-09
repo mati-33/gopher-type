@@ -37,10 +37,10 @@ func NewTyping(ctx *appcontex.AppContext) *typing {
 			keybinds.GoBack,
 			keybinds.Help,
 		}),
-		speedField:     comp.NewDetailField(ctx.Theme, "speed", ctx.Config.SpeedIcon, "-"),
-		accuracyField:  comp.NewDetailField(ctx.Theme, "accuracy", ctx.Config.AccuracyIncon, "-"),
-		modeField:      comp.NewDetailField(ctx.Theme, "mode", ctx.Config.ModeIcon, ctx.Mode.Name()),
-		wordCountField: comp.NewDetailField(ctx.Theme, "word count", ctx.Config.WordCountIcon, "15"),
+		speedField:     comp.NewDetailField(ctx.Theme, "speed", ctx.Config.Icons.Speed, "-"),
+		accuracyField:  comp.NewDetailField(ctx.Theme, "accuracy", ctx.Config.Icons.Accuracy, "-"),
+		modeField:      comp.NewDetailField(ctx.Theme, "mode", ctx.Config.Icons.Mode, ctx.Mode.Name()),
+		wordCountField: comp.NewDetailField(ctx.Theme, "word count", ctx.Config.Icons.WordCount, "15"),
 		wordCount:      ctx.Config.InitWordCount,
 		keybinds:       keybinds,
 	}
@@ -122,6 +122,11 @@ func (s typing) View() string {
 		bannerOffset = 0
 	}
 
+	textWidth := int(float32(s.ctx.Width) * 0.7)
+	if s.ctx.Width < 90 {
+		textWidth = int(float32(s.ctx.Width) * 0.95)
+	}
+
 	helpView := s.help.View()
 	helpOffset := max(0, s.ctx.Width-lipgloss.Width(helpView)-2)
 
@@ -139,7 +144,7 @@ func (s typing) View() string {
 		),
 	)
 
-	textView := s.text.View(int(float32(s.ctx.Width) * 0.7))
+	textView := s.text.View(textWidth)
 	textLayer := lipgloss.NewLayer(lipgloss.Place(
 		s.ctx.Width, s.ctx.Height,
 		lipgloss.Center, lipgloss.Center,

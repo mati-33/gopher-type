@@ -19,9 +19,9 @@ type modeChange struct {
 }
 
 func NewModeChange(ctx *appcontex.AppContext) *modeChange {
-	picker := comp.NewSelect(ctx.Theme, modes.GetModeNames(), "modes:", ctx.Config.ModeIcon)
+	picker := comp.NewSelect(ctx.Theme, modes.GetModeNames(), "modes:", ctx.Config.Icons.Mode)
 	picker.SetSelected(ctx.Mode.Name())
-	preview := comp.NewPreview(ctx.Theme, string(ctx.Mode.Generate(ctx.Config.PreviewSize)))
+	preview := comp.NewPreview(ctx.Theme, string(ctx.Mode.Generate(ctx.Config.PreviewSize)), ctx.Config.Icons.Preview)
 	keybinds := newModeChangeKeybinds()
 
 	return &modeChange{
