@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
 	"os"
+	"path"
 	"slices"
 
 	"github.com/mati-33/gopher-type/internal/modes"
@@ -14,6 +14,12 @@ import (
 )
 
 var ErrConfigNotFound = errors.New("config file not found")
+
+var (
+	filename = "config.json"
+	filedir  = "gopher-type"
+	envvar   = "GOPHER_TYPE_CONFIG"
+)
 
 type Config struct {
 	InitTheme     string
@@ -117,22 +123,30 @@ func LoadUserConfig() (*userConfig, error) {
 	return &uc, nil
 }
 
-func loadUserConfigFile() ([]byte, error) {
-	var (
-		content []byte
-		err     error
-	)
-
-	for _, path := range []string{
-		os.Getenv("GOPHER_CONFIG"),
-		fmt.Sprintf("%s/gopher-type/config.json", os.Getenv("XDG_CONFIG_HOME")),
-		fmt.Sprintf("%s/.config/gopher-type/config.json", os.Getenv("HOME")),
-	} {
-		content, err = os.ReadFile(path)
-		if err == nil {
-			return content, nil
-		}
+func getConfigFilepath() (string, error) {
+	if gtc := os.Getenv(envvar); gtc != "" {
+		return path.Join(gtc, filename), nil
 	}
 
-	return nil, ErrConfigNotFound
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+
+	return path.Join(configDir, filedir, filename), nil
+
+}
+
+func loadUserConfigFile() ([]byte, error) {
+	fp, err := getConfigFilepath()
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := os.ReadFile(fp)
+	if err != nil {
+		return nil, ErrConfigNotFound
+	}
+
+	return content, nil
 }
