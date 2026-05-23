@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -11,6 +12,8 @@ import (
 	"github.com/mati-33/gopher-type/internal/themes"
 )
 
+var errConfigNotFound = errors.New("config file not found")
+
 type fileConfig struct {
 	Theme       string `json:"theme"`
 	Mode        string `json:"mode"`
@@ -18,7 +21,7 @@ type fileConfig struct {
 	Icons       *bool  `json:"icons"`
 }
 
-func ParseFileConfig() (*fileConfig, error) {
+func parseFileConfig() (*fileConfig, error) {
 	fileContent, err := loadConfigFile()
 	if err != nil {
 		return nil, err
@@ -64,7 +67,7 @@ func loadConfigFile() ([]byte, error) {
 
 	content, err := os.ReadFile(fp)
 	if err != nil {
-		return nil, ErrConfigNotFound
+		return nil, errConfigNotFound
 	}
 
 	return content, nil

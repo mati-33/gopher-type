@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -19,13 +18,12 @@ func main() {
 	}
 	defer f.Close()
 
-	fileConfig, err := config.ParseFileConfig()
-	if err != nil && !errors.Is(err, config.ErrConfigNotFound) {
-		fmt.Fprintf(os.Stderr, "error in configuration file: %v\n", err)
+	cfg, err := config.New()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	cfg := config.New(fileConfig)
 	appctx := appcontex.New(cfg)
 	app := app.New(appctx)
 	p := tea.NewProgram(app)

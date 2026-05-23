@@ -3,9 +3,8 @@ package config
 import (
 	"cmp"
 	"errors"
+	"fmt"
 )
-
-var ErrConfigNotFound = errors.New("config file not found")
 
 var (
 	filename = "config.json"
@@ -64,10 +63,16 @@ func newDefault() *Config {
 	}
 }
 
-func New(fc *fileConfig) *Config {
+func New() (*Config, error) {
 	c := newDefault()
+
+	fc, err := parseFileConfig()
+	if err != nil && !errors.Is(err, errConfigNotFound) {
+		return nil, fmt.Errorf("error in configuration file: %v", err)
+	}
+
 	if fc == nil {
-		return c
+		return c, nil
 	}
 
 	c.InitMode = cmp.Or(fc.Mode, c.InitMode)
@@ -81,5 +86,5 @@ func New(fc *fileConfig) *Config {
 		c.Icons = newEmptyIcons()
 	}
 
-	return c
+	return c, nil
 }
