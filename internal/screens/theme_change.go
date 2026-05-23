@@ -38,6 +38,7 @@ func NewThemeChange(ctx *appcontex.AppContext) *themeChange {
 			keybinds.Next,
 			keybinds.Previous,
 			keybinds.Choose,
+			keybinds.ToggleTransparency,
 			keybinds.Cancel,
 			keybinds.Help,
 		}),
