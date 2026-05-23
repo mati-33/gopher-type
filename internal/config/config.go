@@ -71,10 +71,14 @@ func New() (*Config, error) {
 		return nil, fmt.Errorf("error in configuration file: %v", err)
 	}
 
-	if fc == nil {
-		return c, nil
+	if fc != nil {
+		applyFileConfig(c, fc)
 	}
 
+	return c, nil
+}
+
+func applyFileConfig(c *Config, fc *fileConfig) {
 	c.InitMode = cmp.Or(fc.Mode, c.InitMode)
 	c.InitTheme = cmp.Or(fc.Theme, c.InitTheme)
 
@@ -85,6 +89,4 @@ func New() (*Config, error) {
 	if fc.Icons != nil && !*fc.Icons {
 		c.Icons = newEmptyIcons()
 	}
-
-	return c, nil
 }
