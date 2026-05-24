@@ -11,13 +11,6 @@ import (
 )
 
 func main() {
-	f, err := tea.LogToFile("debug.log", "")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to setup debug logging: %v", err)
-		os.Exit(1)
-	}
-	defer f.Close()
-
 	cfg, err := config.New()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
