@@ -8,7 +8,6 @@ type Mode interface {
 var registry = []Mode{
 	newEn1kMode(),
 	newPl2kMode(),
-	newPlDiacriticsMode(),
 	newNumberMode(),
 }
 
