@@ -66,6 +66,11 @@ func newDefault() *Config {
 func New() (*Config, error) {
 	c := newDefault()
 
+	cc, err := parseCliConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	fc, err := parseFileConfig()
 	if err != nil && !errors.Is(err, errConfigNotFound) {
 		return nil, fmt.Errorf("error in configuration file: %v", err)
@@ -74,6 +79,8 @@ func New() (*Config, error) {
 	if fc != nil {
 		applyFileConfig(c, fc)
 	}
+
+	applyCliConfig(c, cc)
 
 	return c, nil
 }
@@ -87,6 +94,16 @@ func applyFileConfig(c *Config, fc *fileConfig) {
 	}
 
 	if fc.Icons != nil && !*fc.Icons {
+		c.Icons = newEmptyIcons()
+	}
+}
+
+func applyCliConfig(c *Config, cc *cliConfig) {
+	c.InitMode = cmp.Or(cc.Mode, c.InitMode)
+	c.InitTheme = cmp.Or(cc.Theme, c.InitTheme)
+	c.Transparent = cmp.Or(cc.Transparent, c.Transparent)
+
+	if cc.NoIcons {
 		c.Icons = newEmptyIcons()
 	}
 }
