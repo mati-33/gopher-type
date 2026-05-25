@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -10,8 +11,20 @@ import (
 	"github.com/mati-33/gopher-type/internal/config"
 )
 
+const version = "v1.0.0"
+
 func main() {
+	var versionCalled bool
+	flag.BoolVar(&versionCalled, "v", false, "show version")
+	flag.BoolVar(&versionCalled, "version", false, "show version")
+
 	cfg, err := config.New()
+
+	if versionCalled {
+		fmt.Println(version)
+		return
+	}
+
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
