@@ -9,9 +9,8 @@ import (
 	"github.com/mati-33/gopher-type/internal/app"
 	"github.com/mati-33/gopher-type/internal/appcontex"
 	"github.com/mati-33/gopher-type/internal/config"
+	"github.com/mati-33/gopher-type/internal/version"
 )
-
-const version = "v1.0.0"
 
 func main() {
 	var versionCalled bool
@@ -21,7 +20,7 @@ func main() {
 	cfg, err := config.New()
 
 	if versionCalled {
-		fmt.Println(version)
+		fmt.Println(version.Version)
 		return
 	}
 
