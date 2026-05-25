@@ -5,6 +5,10 @@
 </p>
 <p align="center">typing practise app for the terminal</p>
 
+<p align="center">
+  <img src="assets/screenshot_01.png">
+</p>
+
 ## About
 
 ## Instalation
